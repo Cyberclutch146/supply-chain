@@ -68,7 +68,7 @@ const Dashboard = () => {
                const metrics = getShipmentMetrics(shipment.id);
                const isHighRisk = metrics.riskScore >= 61;
                const isMedRisk = metrics.riskScore >= 31 && !isHighRisk;
-               const primaryCause = metrics.breakdown?.length > 0 ? metrics.breakdown[0] : null;
+               const primaryCause = metrics.breakdown?.primary;
 
                return (
                  <Link 
@@ -88,16 +88,16 @@ const Dashboard = () => {
                          <div className="flex justify-between items-start w-full mb-1">
                            <div className="flex items-center gap-2">
                              <h4 className="font-semibold text-on-surface">{shipment.id}</h4>
-                             <span className={`${isHighRisk ? 'bg-[#ff7162]/20 text-[#ff7162]' : 'bg-[#50ffb0]/20 text-[#50ffb0]'} text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider`}>
+                             <span className={`${isHighRisk ? 'bg-[#ff7162]/20 text-[#ff7162]' : isMedRisk ? 'bg-[#f59e0b]/20 text-[#f59e0b]' : 'bg-[#50ffb0]/20 text-[#50ffb0]'} text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider`}>
                                {isHighRisk ? 'CRITICAL' : isMedRisk ? 'WARNING' : 'SECURE'}
                              </span>
                            </div>
                            <span className="text-sm font-medium text-on-surface">{metrics.delayProb}% Delay Prob</span>
                          </div>
                          
-                         {isHighRisk && primaryCause && (
-                           <div className="mt-2 mb-3 font-mono text-[10px] text-[#ff7162]/80 bg-surface-container-lowest p-2 rounded border border-[#ff7162]/10 inline-block">
-                             AI.Reasoning: {primaryCause}
+                         {primaryCause && (
+                           <div className={`mt-2 mb-3 font-mono text-[10px] p-2 rounded border inline-block ${isHighRisk ? 'text-[#ff7162]/80 bg-[#ff7162]/5 border-[#ff7162]/10' : 'text-[#50ffb0]/80 bg-[#50ffb0]/5 border-[#50ffb0]/10'}`}>
+                             AI.Analysis: {primaryCause}
                            </div>
                          )}
                          

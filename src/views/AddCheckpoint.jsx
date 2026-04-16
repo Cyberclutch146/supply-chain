@@ -28,18 +28,15 @@ const AddCheckpoint = () => {
     e.preventDefault();
     if (!formData.location) return;
 
-    let finalStatus = formData.status;
-    if (formData.scenario === 'Tampered') {
-      finalStatus = 'Tampered';
-    }
+    const isTampered = formData.scenario === 'Tampered';
 
     const payload = {
       location: formData.location,
-      status: finalStatus,
+      status: isTampered ? 'In Transit' : formData.status, // Tampered events are usually masked as normal status
       ...(scenarioMap[formData.scenario] || scenarioMap['Normal'])
     };
 
-    addCheckpoint(id, payload);
+    addCheckpoint(id, payload, isTampered);
     navigate(`/shipment/${id}`);
   };
 
