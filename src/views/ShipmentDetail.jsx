@@ -82,24 +82,25 @@ const ShipmentDetail = () => {
         </div>
 
         {/* Demo Toggle */}
-        <div className="flex bg-surface-container rounded-lg p-1 border border-outline-variant/20 md:ml-6">
+        <div className="relative flex bg-[#0b0e14] rounded-lg p-1 border border-outline-variant/30 md:ml-6 mt-2 md:mt-0 shadow-inner">
+          <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-md transition-all duration-300 ease-out z-0 ${isSimulated ? 'translate-x-[calc(100%+8px)] bg-[#ff7162]/20 border border-[#ff7162]/30 shadow-[0_0_10px_rgba(255,113,98,0.3)]' : 'translate-x-0 bg-[#50ffb0]/20 border border-[#50ffb0]/30 shadow-[0_0_10px_rgba(80,255,176,0.3)]'}`}></div>
           <button 
             onClick={() => setIsSimulated(false)}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${!isSimulated ? 'bg-primary text-on-primary shadow-lg' : 'text-on-surface-variant hover:text-white'}`}
+            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all z-10 w-28 text-center flex justify-center items-center ${!isSimulated ? 'text-[#50ffb0] drop-shadow-[0_0_5px_rgba(80,255,176,0.8)]' : 'text-on-surface-variant hover:text-white'}`}
           >
             NORMAL
           </button>
           <button 
             onClick={() => setIsSimulated(true)}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 ${isSimulated ? 'bg-[#ff7162] text-white shadow-lg' : 'text-on-surface-variant hover:text-[#ff7162]'}`}
+            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all flex justify-center items-center gap-1 z-10 w-36 text-center ${isSimulated ? 'text-[#ff7162] drop-shadow-[0_0_5px_rgba(255,113,98,0.8)]' : 'text-on-surface-variant hover:text-[#ff7162]'}`}
           >
-            <Zap size={12} /> SIMULATED RISK
+            <Zap size={12} /> SIMULATED
           </button>
         </div>
 
-        <div className="md:ml-auto w-full md:w-auto">
-          <Link to={`/add-checkpoint/${shipment.id}`} className="pulse-btn text-[#00482c] px-4 py-3 md:py-2 rounded-lg font-bold text-sm shadow-neon flex items-center justify-center gap-2">
-            <Plus size={16} /> New Demo Event
+        <div className="md:ml-auto w-full md:w-auto mt-2 md:mt-0">
+          <Link to={`/add-checkpoint/${shipment.id}`} className="text-[#0b0e14] px-4 py-3 md:py-2.5 rounded-lg font-bold text-sm shadow-[0_0_15px_rgba(80,255,176,0.4)] bg-[#50ffb0] flex items-center justify-center gap-2 hover:bg-[#6affc0] hover:scale-[0.98] active:scale-[0.96] hover:shadow-[0_0_25px_rgba(80,255,176,0.6)] transition-all duration-200">
+            <Plus size={18} /> New Demo Event
           </Link>
         </div>
       </header>
@@ -121,18 +122,18 @@ const ShipmentDetail = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 mt-4">
+          <div className="flex flex-col gap-4 mt-6">
             {/* Primary Factor - Highlighted */}
-            <div className={`border rounded-lg p-4 transition-all duration-500 ${isHighRisk ? 'bg-[#ff7162]/10 border-[#ff7162]/30 shadow-[0_0_15px_rgba(255,113,98,0.1)]' : 'bg-surface-container-lowest border-outline-variant/10'}`}>
-              <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isHighRisk ? 'text-[#ff7162]' : 'text-on-surface-variant'}`}>Primary Factor</div>
-              <div className={`text-sm font-bold ${isHighRisk ? 'text-white' : 'text-on-surface'}`}>{metrics.breakdown.primary}</div>
+            <div className={`border rounded-lg p-5 transition-all duration-500 ${isHighRisk ? 'bg-[#ff7162]/10 border-[#ff7162]/30 shadow-[0_0_15px_rgba(255,113,98,0.15)]' : 'bg-surface-container-lowest border-outline-variant/10'}`}>
+              <div className={`text-xs font-black uppercase tracking-wider mb-2 ${isHighRisk ? 'text-[#ff7162]' : 'text-on-surface-variant'}`}>Primary Factor</div>
+              <div className={`text-2xl font-black ${isHighRisk ? 'text-white' : 'text-on-surface'}`}>{metrics.breakdown.primary}</div>
             </div>
             
             {/* Secondary Factor - Subtle */}
             {metrics.breakdown.secondary && (
-              <div className="bg-surface-container-lowest border border-outline-variant/5 rounded-lg p-4 opacity-80">
+              <div className="bg-surface-container-lowest border border-outline-variant/5 rounded-lg p-4 opacity-70">
                 <div className="text-[10px] text-on-surface-variant font-medium uppercase tracking-wider mb-1">Secondary Factor</div>
-                <div className="text-sm font-medium text-on-surface-variant">{metrics.breakdown.secondary}</div>
+                <div className="text-xs font-medium text-on-surface-variant/80">{metrics.breakdown.secondary}</div>
               </div>
             )}
             
@@ -140,7 +141,7 @@ const ShipmentDetail = () => {
               <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                 <BrainCircuit size={12} /> AI Reasoning Engine
               </div>
-              <p className="text-sm leading-relaxed text-on-surface italic">
+              <p className="text-sm leading-relaxed text-[#50ffb0]/70 italic mt-2">
                 "{metrics.breakdown.explanationText}"
               </p>
             </div>
@@ -158,33 +159,47 @@ const ShipmentDetail = () => {
             <div className="absolute left-[11px] top-2 bottom-4 w-px bg-outline-variant/30"></div>
             
             <div className="flex flex-col gap-6 relative">
-              {ledgerIntegrity.map((checkpoint, index) => (
-                <div key={index} className="relative">
-                  <div className={`absolute -left-[30px] top-1 w-3 h-3 rounded-full border-2 border-[#1c2028] ${checkpoint.isVerified ? 'bg-[#50ffb0] shadow-[0_0_10px_#50ffb0]' : 'bg-[#ff7162] shadow-[0_0_10px_#ff7162]'}`}></div>
-                  
-                  <div className="flex flex-col gap-1">
-                    <div className="flex justify-between items-start">
-                      <div className="font-semibold text-on-surface text-sm">{checkpoint.location}</div>
-                      <div className="text-[10px] font-mono crypto-mono text-on-surface-variant">{new Date(checkpoint.timestamp).toLocaleString()}</div>
-                    </div>
+              {ledgerIntegrity.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-8 bg-[#0b0e14]/50 rounded-xl border border-outline-variant/10 text-center">
+                  <p className="text-lg font-bold text-on-surface mb-2">No Ledger Events Yet</p>
+                  <p className="text-sm text-on-surface-variant font-mono">Add your first checkpoint to activate intelligence.</p>
+                </div>
+              ) : ledgerIntegrity.map((checkpoint, index) => {
+                const isVerified = checkpoint.isVerified;
+                const txHash = checkpoint.verificationHash ? `0x${checkpoint.verificationHash.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10).toUpperCase()}...${checkpoint.verificationHash.slice(-4).toUpperCase()}` : '0xPENDING';
+                return (
+                  <div key={index} className="relative group">
+                    <div className={`absolute -left-[30px] top-1 w-3 h-3 rounded-full border-2 border-[#1c2028] transition-all duration-300 ${isVerified ? 'bg-[#50ffb0] shadow-[0_0_10px_#50ffb0] group-hover:scale-125' : 'bg-[#ff7162] shadow-[0_0_15px_#ff7162] animate-pulse'}`}></div>
                     
-                    <div className="mt-2 font-mono crypto-mono text-xs bg-[#0b0e14] border border-outline-variant/20 p-3 rounded-lg overflow-hidden flex flex-col gap-2 shadow-inner">
-                      <div className="text-on-surface-variant truncate">Hash: <span className="text-on-surface opacity-70 italic">{checkpoint.verificationHash || 'unhashed_legacy'}</span></div>
-                      <div className="pt-2 mt-1 border-t border-outline-variant/10">
-                        {!checkpoint.isVerified ? (
-                          <div className="text-[#ff7162] font-bold flex items-center gap-2 text-[10px]">
-                            <AlertTriangle size={14}/> DATA INTEGRITY COMPROMISED
-                          </div>
-                        ) : (
-                          <div className="text-[#50ffb0] font-bold flex items-center gap-2 text-[10px]">
-                            <CheckCircle size={14}/> CRYPTOGRAPHICALLY VERIFIED
-                          </div>
-                        )}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex justify-between items-start">
+                        <div className="font-semibold text-on-surface text-sm">{checkpoint.location}</div>
+                        <div className="text-[10px] font-mono crypto-mono text-on-surface-variant">{new Date(checkpoint.timestamp).toLocaleString()}</div>
+                      </div>
+                      
+                      <div className="mt-2 font-mono crypto-mono text-xs bg-[#0b0e14] border border-outline-variant/20 p-4 rounded-lg overflow-hidden flex flex-col gap-3 shadow-inner hover:border-outline-variant/40 transition-colors">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-on-surface-variant truncate">Tx: <span className="text-[#50ffb0]">{txHash}</span></div>
+                          <div className="text-on-surface-variant text-right">Status: <span className="text-white">Confirmed</span></div>
+                        </div>
+                        <div className="text-on-surface-variant truncate opacity-50">Payload Hash: <span className="italic">{checkpoint.verificationHash || 'unhashed_legacy'}</span></div>
+                        
+                        <div className="pt-2 mt-1 border-t border-outline-variant/10">
+                          {!isVerified ? (
+                            <div className="text-[#ff7162] font-bold flex items-center gap-2 text-[10px] animate-pulse">
+                              <AlertTriangle size={14}/> DATA INTEGRITY COMPROMISED
+                            </div>
+                          ) : (
+                            <div className="text-[#50ffb0] font-bold flex items-center gap-2 text-[10px] drop-shadow-[0_0_5px_rgba(80,255,176,0.6)]">
+                              <CheckCircle size={14}/> CRYPTOGRAPHICALLY VERIFIED
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

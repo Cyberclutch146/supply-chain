@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useShipments } from '../context/ShipmentContext';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AddShipment = () => {
   const navigate = useNavigate();
@@ -13,11 +14,30 @@ const AddShipment = () => {
     destination: '',
   });
 
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+
+  const loadingTexts = [
+    "Compiling Contract...",
+    "Deploying to Network...",
+    "Awaiting Confirmation..."
+  ];
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.origin || !formData.destination) return;
     
-    addShipment(formData);
+    setIsSubmitting(true);
+    setLoadingStep(0);
+    
+    await new Promise(r => setTimeout(r, 600));
+    setLoadingStep(1);
+    await new Promise(r => setTimeout(r, 800));
+    setLoadingStep(2);
+    await new Promise(r => setTimeout(r, 1000));
+    
+    await addShipment(formData);
+    toast.success("Transaction Confirmed");
     navigate('/'); // redirect to dashboard
   };
 
@@ -29,11 +49,20 @@ const AddShipment = () => {
         </button>
         <div>
           <h2 className="text-2xl font-headline font-bold text-on-surface tracking-tight">Create Shipment</h2>
-          <p className="text-xs text-on-surface-variant font-mono crypto-mono mt-1">Initiating New Contract on Ledger</p>
+          <p className="text-xs text-on-surface-variant font-mono mt-1">Initiating New Contract on Ledger</p>
         </div>
       </header>
       
-      <div className="glass-card rounded-xl p-6 md:p-8 relative overflow-hidden neon-border-hover transition-all duration-300">
+      <div className="glass-card rounded-xl p-6 md:p-8 relative overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(80,255,176,0.1)]">
+        {isSubmitting && (
+          <div className="absolute inset-0 z-50 bg-[#0b0e14]/80 backdrop-blur-md flex flex-col items-center justify-center rounded-xl border border-[#50ffb0]/20">
+             <Loader2 className="w-12 h-12 text-[#50ffb0] animate-spin mb-4 drop-shadow-[0_0_10px_rgba(80,255,176,0.5)]" />
+             <p className="text-[#50ffb0] font-mono tracking-wider animate-pulse transition-all duration-300">
+               {loadingTexts[loadingStep]}
+             </p>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           
           <div className="flex flex-col gap-2">
@@ -54,7 +83,8 @@ const AddShipment = () => {
               value={formData.origin}
               onChange={e => setFormData({...formData, origin: e.target.value})}
               required
-              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm"
+              disabled={isSubmitting}
+              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm disabled:opacity-50"
             />
           </div>
           
@@ -66,12 +96,18 @@ const AddShipment = () => {
               value={formData.destination}
               onChange={e => setFormData({...formData, destination: e.target.value})}
               required
-              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm"
+              disabled={isSubmitting}
+              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm disabled:opacity-50"
             />
           </div>
           
-          <button type="submit" className="pulse-btn mt-6 py-4 rounded-lg font-bold shadow-neon flex justify-center items-center gap-2">
-            <Save size={18} /> Initialize Contract
+          <button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="mt-6 py-4 rounded-lg font-bold shadow-[0_0_15px_rgba(80,255,176,0.3)] bg-[#50ffb0] text-[#0b0e14] flex justify-center items-center gap-2 hover:bg-[#6affc0] hover:scale-[0.98] active:scale-[0.96] hover:shadow-[0_0_25px_rgba(80,255,176,0.5)] transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed"
+          >
+             {isSubmitting ? <Loader2 className="animate-spin w-5 h-5" /> : <Save size={18} />}
+             {isSubmitting ? "Processing..." : "Initialize Contract"}
           </button>
         </form>
       </div>

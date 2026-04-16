@@ -64,19 +64,24 @@ const Dashboard = () => {
            </div>
            
            <div className="flex flex-col gap-4">
-             {shipments.map(shipment => {
+             {shipments.length === 0 ? (
+               <div className="flex flex-col flex-1 items-center justify-center p-12 glass-card rounded-xl border border-outline-variant/30 text-center animate-[fadeIn_1s_ease-out]">
+                 <p className="text-xl font-bold text-on-surface mb-2">No Active Shipments</p>
+                 <p className="text-sm text-on-surface-variant font-mono">Initialize a new contract to begin tracking.</p>
+               </div>
+             ) : shipments.map(shipment => {
                const metrics = getShipmentMetrics(shipment.id);
                const isHighRisk = metrics.riskScore >= 61;
                const isMedRisk = metrics.riskScore >= 31 && !isHighRisk;
                const primaryCause = metrics.breakdown?.primary;
 
                return (
-                 <Link 
-                   to={`/shipment/${shipment.id}`} 
-                   key={shipment.id} 
-                   className={`glass-card rounded-xl p-5 relative overflow-hidden transition-all duration-300 group cursor-pointer ${isHighRisk ? 'border-l-4 border-l-[#ff7162]' : isMedRisk ? 'border-l-4 border-l-[#f59e0b]' : 'neon-border-hover'}`}
-                 >
-                   {isHighRisk && <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#ff7162]/5 to-transparent pointer-events-none"></div>}
+                  <Link 
+                    to={`/shipment/${shipment.id}`} 
+                    key={shipment.id} 
+                    className={`glass-card rounded-xl p-5 relative overflow-hidden transition-all duration-300 group cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(80,255,176,0.15)] hover:z-10 ${isHighRisk ? 'border-l-4 border-l-[#ff7162]' : isMedRisk ? 'border-l-4 border-l-[#f59e0b]' : 'neon-border-hover'}`}
+                  >
+                    {isHighRisk && <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#ff7162]/5 to-transparent pointer-events-none group-hover:from-[#ff7162]/10 transition-colors"></div>}
                    
                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                      <div className="flex items-start gap-4 w-full">

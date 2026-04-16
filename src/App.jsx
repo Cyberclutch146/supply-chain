@@ -6,6 +6,8 @@ import Dashboard from './views/Dashboard';
 import ShipmentDetail from './views/ShipmentDetail';
 import AddShipment from './views/AddShipment';
 import AddCheckpoint from './views/AddCheckpoint';
+import LoadingScreen from './components/LoadingScreen';
+import { Toaster } from 'react-hot-toast';
 import { auth } from './firebase';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
@@ -26,10 +28,23 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  if (!isAuthenticated) return <div className="min-h-screen bg-[#0b0e14] flex items-center justify-center text-[#50ffb0]">Initializing...</div>;
+  if (!isAuthenticated) return <LoadingScreen />;
 
   return (
     <ShipmentProvider>
+      <Toaster position="top-right" toastOptions={{
+        style: {
+          background: '#1A202C',
+          color: '#fff',
+          border: '1px solid #2D3748',
+        },
+        success: {
+          iconTheme: {
+            primary: '#50ffb0',
+            secondary: '#1A202C',
+          },
+        },
+      }} />
       <Router>
         <Layout>
           <Routes>
