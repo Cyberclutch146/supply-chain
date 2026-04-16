@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, useMemo } from 'react';
 import { collection, onSnapshot, doc, setDoc, updateDoc, addDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions, auth } from '../firebase';
+import { db, functions, auth } from '../services/firebase';
 
 const ShipmentContext = createContext();
 

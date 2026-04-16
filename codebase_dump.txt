@@ -9,11 +9,13 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ShipmentProvider } from './context/ShipmentContext';
 import Layout from './components/Layout';
-import Dashboard from './views/Dashboard';
-import ShipmentDetail from './views/ShipmentDetail';
-import AddShipment from './views/AddShipment';
-import AddCheckpoint from './views/AddCheckpoint';
-import { auth } from './firebase';
+import Dashboard from './pages/Dashboard';
+import ShipmentDetail from './pages/ShipmentDetail';
+import AddShipment from './pages/AddShipment';
+import AddCheckpoint from './pages/AddCheckpoint';
+import LoadingScreen from './components/LoadingScreen';
+import { Toaster } from 'react-hot-toast';
+import { auth } from './services/firebase';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 function App() {
@@ -33,10 +35,23 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  if (!isAuthenticated) return <div className="min-h-screen bg-[#0b0e14] flex items-center justify-center text-[#50ffb0]">Initializing...</div>;
+  if (!isAuthenticated) return <LoadingScreen />;
 
   return (
     <ShipmentProvider>
+      <Toaster position="top-right" toastOptions={{
+        style: {
+          background: '#1A202C',
+          color: '#fff',
+          border: '1px solid #2D3748',
+        },
+        success: {
+          iconTheme: {
+            primary: '#50ffb0',
+            secondary: '#1A202C',
+          },
+        },
+      }} />
       <Router>
         <Layout>
           <Routes>
@@ -162,12 +177,41 @@ export default Layout;
 ```
 
 
+=== src/components/LoadingScreen.jsx ===
+```javascript
+import React from 'react';
+import { Loader2 } from 'lucide-react';
+
+const LoadingScreen = () => {
+  return (
+    <div className="min-h-screen bg-[#0b0e14] flex flex-col items-center justify-center text-[#50ffb0] selection:bg-[#50ffb0]/20 font-inter">
+      <div className="relative flex items-center justify-center mb-8">
+        <div className="absolute w-24 h-24 border-2 border-[#50ffb0]/20 rounded-full animate-ping"></div>
+        <div className="absolute w-16 h-16 border-2 border-[#50ffb0]/40 rounded-full animate-pulse"></div>
+        <Loader2 className="w-12 h-12 animate-spin text-[#50ffb0]" />
+      </div>
+      
+      <h1 className="text-2xl font-bold tracking-tight mb-2 opacity-0 animate-[fadeIn_1s_ease-out_forwards]">
+        ChainSight Network Initializing
+      </h1>
+      <p className="text-gray-400 text-sm tracking-wide opacity-0 animate-[fadeIn_1s_ease-out_0.5s_forwards]">
+        Syncing distributed ledger...
+      </p>
+    </div>
+  );
+};
+
+export default LoadingScreen;
+
+```
+
+
 === src/context/ShipmentContext.jsx ===
 ```javascript
 import React, { createContext, useState, useEffect, useContext, useMemo } from 'react';
 import { collection, onSnapshot, doc, setDoc, updateDoc, addDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions, auth } from '../firebase';
+import { db, functions, auth } from '../services/firebase';
 
 const ShipmentContext = createContext();
 
@@ -397,31 +441,6 @@ export const ShipmentProvider = ({ children }) => {
 ```
 
 
-=== src/firebase.js ===
-```javascript
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
-import { getAuth } from "firebase/auth";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD0PSc39DME7z80FxoyNRT-T-RZJEF1RfI",
-  authDomain: "habit-rpg-blazi-dev.firebaseapp.com",
-  projectId: "habit-rpg-blazi-dev",
-  storageBucket: "habit-rpg-blazi-dev.firebasestorage.app",
-  messagingSenderId: "813647594253",
-  appId: "1:813647594253:web:f55e1b41744b1a2f0c2644"
-};
-
-const app = initializeApp(firebaseConfig);
-
-export const db = getFirestore(app);
-export const functions = getFunctions(app);
-export const auth = getAuth(app);
-
-```
-
-
 === src/index.css ===
 ```css
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
@@ -538,12 +557,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 ```
 
 
-=== src/views/AddCheckpoint.jsx ===
+=== src/pages/AddCheckpoint.jsx ===
 ```javascript
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useShipments } from '../context/ShipmentContext';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AddCheckpoint = () => {
   const navigate = useNavigate();
@@ -556,6 +576,15 @@ const AddCheckpoint = () => {
     scenario: 'Normal'
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+
+  const loadingTexts = [
+    "Signing Transaction...",
+    "Broadcasting to Network...",
+    "Awaiting Confirmation..."
+  ];
+
   const scenarioMap = {
     'Normal': { idleTime: 0, harshBrakes: 0, trafficLevel: 'low', waitTime: 5, vehicleStatus: 'ok', weather: 'clear', checkpointDelay: 0, routeDeviation: false },
     'Heavy Traffic': { idleTime: 15, harshBrakes: 5, trafficLevel: 'high', waitTime: 10, vehicleStatus: 'ok', weather: 'clear', checkpointDelay: 0, routeDeviation: false },
@@ -566,19 +595,29 @@ const AddCheckpoint = () => {
     'Compliance/Border Delay': { idleTime: 45, harshBrakes: 0, trafficLevel: 'low', waitTime: 40, vehicleStatus: 'ok', weather: 'clear', checkpointDelay: 30, routeDeviation: false }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.location) return;
 
-    const isTampered = formData.scenario === 'Tampered';
+    setIsSubmitting(true);
+    setLoadingStep(0);
 
+    const isTampered = formData.scenario === 'Tampered';
     const payload = {
       location: formData.location,
       status: isTampered ? 'In Transit' : formData.status, // Tampered events are usually masked as normal status
       ...(scenarioMap[formData.scenario] || scenarioMap['Normal'])
     };
 
-    addCheckpoint(id, payload, isTampered);
+    // Simulate transaction progression
+    await new Promise(r => setTimeout(r, 600));
+    setLoadingStep(1);
+    await new Promise(r => setTimeout(r, 800));
+    setLoadingStep(2);
+    await new Promise(r => setTimeout(r, 1000));
+
+    await addCheckpoint(id, payload, isTampered);
+    toast.success("Ledger Updated Successfully");
     navigate(`/shipment/${id}`);
   };
 
@@ -590,11 +629,20 @@ const AddCheckpoint = () => {
         </button>
         <div>
           <h2 className="text-2xl font-headline font-bold text-on-surface tracking-tight">Add Ledger Event</h2>
-          <p className="text-xs text-on-surface-variant font-mono crypto-mono mt-1">Target Node: <span className="text-[#50ffb0]">{id}</span></p>
+          <p className="text-xs text-on-surface-variant font-mono mt-1">Target Node: <span className="text-[#50ffb0]">{id}</span></p>
         </div>
       </header>
       
-      <div className="glass-card rounded-xl p-6 md:p-8 relative overflow-hidden neon-border-hover transition-all duration-300">
+      <div className="glass-card rounded-xl p-6 md:p-8 relative overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(80,255,176,0.1)]">
+        {isSubmitting && (
+          <div className="absolute inset-0 z-50 bg-[#0b0e14]/80 backdrop-blur-md flex flex-col items-center justify-center rounded-xl border border-[#50ffb0]/20">
+             <Loader2 className="w-12 h-12 text-[#50ffb0] animate-spin mb-4 drop-shadow-[0_0_10px_rgba(80,255,176,0.5)]" />
+             <p className="text-[#50ffb0] font-mono tracking-wider animate-pulse transition-all duration-300">
+               {loadingTexts[loadingStep]}
+             </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           
           <div className="flex flex-col gap-2">
@@ -605,7 +653,8 @@ const AddCheckpoint = () => {
               value={formData.location}
               onChange={e => setFormData({...formData, location: e.target.value})}
               required
-              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm"
+              disabled={isSubmitting}
+              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm disabled:opacity-50"
             />
           </div>
 
@@ -614,7 +663,8 @@ const AddCheckpoint = () => {
             <select 
               value={formData.status}
               onChange={e => setFormData({...formData, status: e.target.value})}
-              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm"
+              disabled={isSubmitting}
+              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm disabled:opacity-50"
             >
               <option value="In Transit">In Transit</option>
               <option value="Stopped">Stopped</option>
@@ -624,23 +674,33 @@ const AddCheckpoint = () => {
 
           <div className="flex flex-col gap-3 border-t border-outline-variant/10 pt-6 mt-2">
             <label className="text-[10px] font-bold text-[#50ffb0] uppercase tracking-wider">AI Scenario Simulation (Demo Matrix)</label>
-            <select 
-              value={formData.scenario}
-              onChange={e => setFormData({...formData, scenario: e.target.value})}
-              className="w-full bg-[#50ffb0]/5 border border-[#50ffb0]/30 text-[#50ffb0] font-bold rounded-lg px-4 py-3 focus:outline-none focus:border-[#ff7162] focus:ring-1 focus:ring-[#ff7162] transition-all font-mono text-sm appearance-none"
-            >
-              {Object.keys(scenarioMap).map(s => (
-                <option key={s} value={s} className="bg-surface text-on-surface">{s}</option>
-              ))}
-              <option value="Tampered" className="bg-[#ff7162]/20 text-[#ff7162] font-bold">⚠️ Simulate Data Tampering</option>
-            </select>
-            <p className="text-xs text-on-surface-variant leading-relaxed mt-1 p-3 bg-surface-container-lowest rounded-lg border border-outline-variant/10">
+            <div className="relative group">
+              <select 
+                value={formData.scenario}
+                onChange={e => setFormData({...formData, scenario: e.target.value})}
+                disabled={isSubmitting}
+                className="w-full bg-[#50ffb0]/5 border border-[#50ffb0]/30 text-[#50ffb0] font-bold rounded-lg px-4 py-3 focus:outline-none focus:border-[#ff7162] focus:ring-1 focus:ring-[#ff7162] transition-colors duration-300 font-mono text-sm appearance-none disabled:opacity-50 z-10 relative cursor-pointer"
+              >
+                {Object.keys(scenarioMap).map(s => (
+                  <option key={s} value={s} className="bg-[#0b0e14] text-on-surface">{s}</option>
+                ))}
+                <option value="Tampered" className="bg-[#3a1a1a] text-[#ff7162] font-bold">⚠️ Simulate Data Tampering</option>
+              </select>
+              <div className="absolute inset-0 rounded-lg bg-[#50ffb0]/5 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 ease-out z-0 pointer-events-none"></div>
+            </div>
+            
+            <p className="text-xs text-on-surface-variant leading-relaxed mt-1 p-3 bg-surface-container-lowest rounded-lg border border-outline-variant/10 italic">
               Selecting a scenario automatically populates the 7-dimensional risk matrix (Driver Fatigue, Traffic, Environment variables) behind the scenes, triggering the continuous AI anomaly detection engine.
             </p>
           </div>
           
-          <button type="submit" className="pulse-btn mt-6 py-4 rounded-lg font-bold shadow-neon flex justify-center items-center gap-2">
-            <Save size={18} /> Sign & Broadcast Transaction
+          <button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="mt-6 py-4 rounded-lg font-bold shadow-[0_0_15px_rgba(80,255,176,0.3)] bg-[#50ffb0] text-[#0b0e14] flex justify-center items-center gap-2 hover:bg-[#6affc0] hover:scale-[0.98] active:scale-[0.96] hover:shadow-[0_0_25px_rgba(80,255,176,0.5)] transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed"
+          >
+             {isSubmitting ? <Loader2 className="animate-spin w-5 h-5" /> : <Save size={18} />}
+             {isSubmitting ? "Processing..." : "Sign & Broadcast Transaction"}
           </button>
         </form>
       </div>
@@ -653,12 +713,13 @@ export default AddCheckpoint;
 ```
 
 
-=== src/views/AddShipment.jsx ===
+=== src/pages/AddShipment.jsx ===
 ```javascript
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useShipments } from '../context/ShipmentContext';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AddShipment = () => {
   const navigate = useNavigate();
@@ -670,11 +731,30 @@ const AddShipment = () => {
     destination: '',
   });
 
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+
+  const loadingTexts = [
+    "Compiling Contract...",
+    "Deploying to Network...",
+    "Awaiting Confirmation..."
+  ];
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.origin || !formData.destination) return;
     
-    addShipment(formData);
+    setIsSubmitting(true);
+    setLoadingStep(0);
+    
+    await new Promise(r => setTimeout(r, 600));
+    setLoadingStep(1);
+    await new Promise(r => setTimeout(r, 800));
+    setLoadingStep(2);
+    await new Promise(r => setTimeout(r, 1000));
+    
+    await addShipment(formData);
+    toast.success("Transaction Confirmed");
     navigate('/'); // redirect to dashboard
   };
 
@@ -686,11 +766,20 @@ const AddShipment = () => {
         </button>
         <div>
           <h2 className="text-2xl font-headline font-bold text-on-surface tracking-tight">Create Shipment</h2>
-          <p className="text-xs text-on-surface-variant font-mono crypto-mono mt-1">Initiating New Contract on Ledger</p>
+          <p className="text-xs text-on-surface-variant font-mono mt-1">Initiating New Contract on Ledger</p>
         </div>
       </header>
       
-      <div className="glass-card rounded-xl p-6 md:p-8 relative overflow-hidden neon-border-hover transition-all duration-300">
+      <div className="glass-card rounded-xl p-6 md:p-8 relative overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(80,255,176,0.1)]">
+        {isSubmitting && (
+          <div className="absolute inset-0 z-50 bg-[#0b0e14]/80 backdrop-blur-md flex flex-col items-center justify-center rounded-xl border border-[#50ffb0]/20">
+             <Loader2 className="w-12 h-12 text-[#50ffb0] animate-spin mb-4 drop-shadow-[0_0_10px_rgba(80,255,176,0.5)]" />
+             <p className="text-[#50ffb0] font-mono tracking-wider animate-pulse transition-all duration-300">
+               {loadingTexts[loadingStep]}
+             </p>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           
           <div className="flex flex-col gap-2">
@@ -711,7 +800,8 @@ const AddShipment = () => {
               value={formData.origin}
               onChange={e => setFormData({...formData, origin: e.target.value})}
               required
-              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm"
+              disabled={isSubmitting}
+              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm disabled:opacity-50"
             />
           </div>
           
@@ -723,12 +813,18 @@ const AddShipment = () => {
               value={formData.destination}
               onChange={e => setFormData({...formData, destination: e.target.value})}
               required
-              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm"
+              disabled={isSubmitting}
+              className="w-full bg-[#0b0e14] border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 focus:outline-none focus:border-[#50ffb0] focus:ring-1 focus:ring-[#50ffb0] transition-all font-mono text-sm disabled:opacity-50"
             />
           </div>
           
-          <button type="submit" className="pulse-btn mt-6 py-4 rounded-lg font-bold shadow-neon flex justify-center items-center gap-2">
-            <Save size={18} /> Initialize Contract
+          <button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="mt-6 py-4 rounded-lg font-bold shadow-[0_0_15px_rgba(80,255,176,0.3)] bg-[#50ffb0] text-[#0b0e14] flex justify-center items-center gap-2 hover:bg-[#6affc0] hover:scale-[0.98] active:scale-[0.96] hover:shadow-[0_0_25px_rgba(80,255,176,0.5)] transition-all duration-200 disabled:opacity-70 disabled:hover:scale-100 disabled:cursor-not-allowed"
+          >
+             {isSubmitting ? <Loader2 className="animate-spin w-5 h-5" /> : <Save size={18} />}
+             {isSubmitting ? "Processing..." : "Initialize Contract"}
           </button>
         </form>
       </div>
@@ -741,7 +837,7 @@ export default AddShipment;
 ```
 
 
-=== src/views/Dashboard.jsx ===
+=== src/pages/Dashboard.jsx ===
 ```javascript
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -809,19 +905,24 @@ const Dashboard = () => {
            </div>
            
            <div className="flex flex-col gap-4">
-             {shipments.map(shipment => {
+             {shipments.length === 0 ? (
+               <div className="flex flex-col flex-1 items-center justify-center p-12 glass-card rounded-xl border border-outline-variant/30 text-center animate-[fadeIn_1s_ease-out]">
+                 <p className="text-xl font-bold text-on-surface mb-2">No Active Shipments</p>
+                 <p className="text-sm text-on-surface-variant font-mono">Initialize a new contract to begin tracking.</p>
+               </div>
+             ) : shipments.map(shipment => {
                const metrics = getShipmentMetrics(shipment.id);
                const isHighRisk = metrics.riskScore >= 61;
                const isMedRisk = metrics.riskScore >= 31 && !isHighRisk;
                const primaryCause = metrics.breakdown?.primary;
 
                return (
-                 <Link 
-                   to={`/shipment/${shipment.id}`} 
-                   key={shipment.id} 
-                   className={`glass-card rounded-xl p-5 relative overflow-hidden transition-all duration-300 group cursor-pointer ${isHighRisk ? 'border-l-4 border-l-[#ff7162]' : isMedRisk ? 'border-l-4 border-l-[#f59e0b]' : 'neon-border-hover'}`}
-                 >
-                   {isHighRisk && <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#ff7162]/5 to-transparent pointer-events-none"></div>}
+                  <Link 
+                    to={`/shipment/${shipment.id}`} 
+                    key={shipment.id} 
+                    className={`glass-card rounded-xl p-5 relative overflow-hidden transition-all duration-300 group cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(80,255,176,0.15)] hover:z-10 ${isHighRisk ? 'border-l-4 border-l-[#ff7162]' : isMedRisk ? 'border-l-4 border-l-[#f59e0b]' : 'neon-border-hover'}`}
+                  >
+                    {isHighRisk && <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#ff7162]/5 to-transparent pointer-events-none group-hover:from-[#ff7162]/10 transition-colors"></div>}
                    
                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                      <div className="flex items-start gap-4 w-full">
@@ -914,7 +1015,7 @@ export default Dashboard;
 ```
 
 
-=== src/views/ShipmentDetail.jsx ===
+=== src/pages/ShipmentDetail.jsx ===
 ```javascript
 import React, { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
@@ -1000,24 +1101,25 @@ const ShipmentDetail = () => {
         </div>
 
         {/* Demo Toggle */}
-        <div className="flex bg-surface-container rounded-lg p-1 border border-outline-variant/20 md:ml-6">
+        <div className="relative flex bg-[#0b0e14] rounded-lg p-1 border border-outline-variant/30 md:ml-6 mt-2 md:mt-0 shadow-inner">
+          <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-md transition-all duration-300 ease-out z-0 ${isSimulated ? 'translate-x-[calc(100%+8px)] bg-[#ff7162]/20 border border-[#ff7162]/30 shadow-[0_0_10px_rgba(255,113,98,0.3)]' : 'translate-x-0 bg-[#50ffb0]/20 border border-[#50ffb0]/30 shadow-[0_0_10px_rgba(80,255,176,0.3)]'}`}></div>
           <button 
             onClick={() => setIsSimulated(false)}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${!isSimulated ? 'bg-primary text-on-primary shadow-lg' : 'text-on-surface-variant hover:text-white'}`}
+            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all z-10 w-28 text-center flex justify-center items-center ${!isSimulated ? 'text-[#50ffb0] drop-shadow-[0_0_5px_rgba(80,255,176,0.8)]' : 'text-on-surface-variant hover:text-white'}`}
           >
             NORMAL
           </button>
           <button 
             onClick={() => setIsSimulated(true)}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 ${isSimulated ? 'bg-[#ff7162] text-white shadow-lg' : 'text-on-surface-variant hover:text-[#ff7162]'}`}
+            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all flex justify-center items-center gap-1 z-10 w-36 text-center ${isSimulated ? 'text-[#ff7162] drop-shadow-[0_0_5px_rgba(255,113,98,0.8)]' : 'text-on-surface-variant hover:text-[#ff7162]'}`}
           >
-            <Zap size={12} /> SIMULATED RISK
+            <Zap size={12} /> SIMULATED
           </button>
         </div>
 
-        <div className="md:ml-auto w-full md:w-auto">
-          <Link to={`/add-checkpoint/${shipment.id}`} className="pulse-btn text-[#00482c] px-4 py-3 md:py-2 rounded-lg font-bold text-sm shadow-neon flex items-center justify-center gap-2">
-            <Plus size={16} /> New Demo Event
+        <div className="md:ml-auto w-full md:w-auto mt-2 md:mt-0">
+          <Link to={`/add-checkpoint/${shipment.id}`} className="text-[#0b0e14] px-4 py-3 md:py-2.5 rounded-lg font-bold text-sm shadow-[0_0_15px_rgba(80,255,176,0.4)] bg-[#50ffb0] flex items-center justify-center gap-2 hover:bg-[#6affc0] hover:scale-[0.98] active:scale-[0.96] hover:shadow-[0_0_25px_rgba(80,255,176,0.6)] transition-all duration-200">
+            <Plus size={18} /> New Demo Event
           </Link>
         </div>
       </header>
@@ -1039,18 +1141,18 @@ const ShipmentDetail = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 mt-4">
+          <div className="flex flex-col gap-4 mt-6">
             {/* Primary Factor - Highlighted */}
-            <div className={`border rounded-lg p-4 transition-all duration-500 ${isHighRisk ? 'bg-[#ff7162]/10 border-[#ff7162]/30 shadow-[0_0_15px_rgba(255,113,98,0.1)]' : 'bg-surface-container-lowest border-outline-variant/10'}`}>
-              <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isHighRisk ? 'text-[#ff7162]' : 'text-on-surface-variant'}`}>Primary Factor</div>
-              <div className={`text-sm font-bold ${isHighRisk ? 'text-white' : 'text-on-surface'}`}>{metrics.breakdown.primary}</div>
+            <div className={`border rounded-lg p-5 transition-all duration-500 ${isHighRisk ? 'bg-[#ff7162]/10 border-[#ff7162]/30 shadow-[0_0_15px_rgba(255,113,98,0.15)]' : 'bg-surface-container-lowest border-outline-variant/10'}`}>
+              <div className={`text-xs font-black uppercase tracking-wider mb-2 ${isHighRisk ? 'text-[#ff7162]' : 'text-on-surface-variant'}`}>Primary Factor</div>
+              <div className={`text-2xl font-black ${isHighRisk ? 'text-white' : 'text-on-surface'}`}>{metrics.breakdown.primary}</div>
             </div>
             
             {/* Secondary Factor - Subtle */}
             {metrics.breakdown.secondary && (
-              <div className="bg-surface-container-lowest border border-outline-variant/5 rounded-lg p-4 opacity-80">
+              <div className="bg-surface-container-lowest border border-outline-variant/5 rounded-lg p-4 opacity-70">
                 <div className="text-[10px] text-on-surface-variant font-medium uppercase tracking-wider mb-1">Secondary Factor</div>
-                <div className="text-sm font-medium text-on-surface-variant">{metrics.breakdown.secondary}</div>
+                <div className="text-xs font-medium text-on-surface-variant/80">{metrics.breakdown.secondary}</div>
               </div>
             )}
             
@@ -1058,7 +1160,7 @@ const ShipmentDetail = () => {
               <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                 <BrainCircuit size={12} /> AI Reasoning Engine
               </div>
-              <p className="text-sm leading-relaxed text-on-surface italic">
+              <p className="text-sm leading-relaxed text-[#50ffb0]/70 italic mt-2">
                 "{metrics.breakdown.explanationText}"
               </p>
             </div>
@@ -1076,33 +1178,47 @@ const ShipmentDetail = () => {
             <div className="absolute left-[11px] top-2 bottom-4 w-px bg-outline-variant/30"></div>
             
             <div className="flex flex-col gap-6 relative">
-              {ledgerIntegrity.map((checkpoint, index) => (
-                <div key={index} className="relative">
-                  <div className={`absolute -left-[30px] top-1 w-3 h-3 rounded-full border-2 border-[#1c2028] ${checkpoint.isVerified ? 'bg-[#50ffb0] shadow-[0_0_10px_#50ffb0]' : 'bg-[#ff7162] shadow-[0_0_10px_#ff7162]'}`}></div>
-                  
-                  <div className="flex flex-col gap-1">
-                    <div className="flex justify-between items-start">
-                      <div className="font-semibold text-on-surface text-sm">{checkpoint.location}</div>
-                      <div className="text-[10px] font-mono crypto-mono text-on-surface-variant">{new Date(checkpoint.timestamp).toLocaleString()}</div>
-                    </div>
+              {ledgerIntegrity.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-8 bg-[#0b0e14]/50 rounded-xl border border-outline-variant/10 text-center">
+                  <p className="text-lg font-bold text-on-surface mb-2">No Ledger Events Yet</p>
+                  <p className="text-sm text-on-surface-variant font-mono">Add your first checkpoint to activate intelligence.</p>
+                </div>
+              ) : ledgerIntegrity.map((checkpoint, index) => {
+                const isVerified = checkpoint.isVerified;
+                const txHash = checkpoint.verificationHash ? `0x${checkpoint.verificationHash.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10).toUpperCase()}...${checkpoint.verificationHash.slice(-4).toUpperCase()}` : '0xPENDING';
+                return (
+                  <div key={index} className="relative group">
+                    <div className={`absolute -left-[30px] top-1 w-3 h-3 rounded-full border-2 border-[#1c2028] transition-all duration-300 ${isVerified ? 'bg-[#50ffb0] shadow-[0_0_10px_#50ffb0] group-hover:scale-125' : 'bg-[#ff7162] shadow-[0_0_15px_#ff7162] animate-pulse'}`}></div>
                     
-                    <div className="mt-2 font-mono crypto-mono text-xs bg-[#0b0e14] border border-outline-variant/20 p-3 rounded-lg overflow-hidden flex flex-col gap-2 shadow-inner">
-                      <div className="text-on-surface-variant truncate">Hash: <span className="text-on-surface opacity-70 italic">{checkpoint.verificationHash || 'unhashed_legacy'}</span></div>
-                      <div className="pt-2 mt-1 border-t border-outline-variant/10">
-                        {!checkpoint.isVerified ? (
-                          <div className="text-[#ff7162] font-bold flex items-center gap-2 text-[10px]">
-                            <AlertTriangle size={14}/> DATA INTEGRITY COMPROMISED
-                          </div>
-                        ) : (
-                          <div className="text-[#50ffb0] font-bold flex items-center gap-2 text-[10px]">
-                            <CheckCircle size={14}/> CRYPTOGRAPHICALLY VERIFIED
-                          </div>
-                        )}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex justify-between items-start">
+                        <div className="font-semibold text-on-surface text-sm">{checkpoint.location}</div>
+                        <div className="text-[10px] font-mono crypto-mono text-on-surface-variant">{new Date(checkpoint.timestamp).toLocaleString()}</div>
+                      </div>
+                      
+                      <div className="mt-2 font-mono crypto-mono text-xs bg-[#0b0e14] border border-outline-variant/20 p-4 rounded-lg overflow-hidden flex flex-col gap-3 shadow-inner hover:border-outline-variant/40 transition-colors">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-on-surface-variant truncate">Tx: <span className="text-[#50ffb0]">{txHash}</span></div>
+                          <div className="text-on-surface-variant text-right">Status: <span className="text-white">Confirmed</span></div>
+                        </div>
+                        <div className="text-on-surface-variant truncate opacity-50">Payload Hash: <span className="italic">{checkpoint.verificationHash || 'unhashed_legacy'}</span></div>
+                        
+                        <div className="pt-2 mt-1 border-t border-outline-variant/10">
+                          {!isVerified ? (
+                            <div className="text-[#ff7162] font-bold flex items-center gap-2 text-[10px] animate-pulse">
+                              <AlertTriangle size={14}/> DATA INTEGRITY COMPROMISED
+                            </div>
+                          ) : (
+                            <div className="text-[#50ffb0] font-bold flex items-center gap-2 text-[10px] drop-shadow-[0_0_5px_rgba(80,255,176,0.6)]">
+                              <CheckCircle size={14}/> CRYPTOGRAPHICALLY VERIFIED
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -1117,6 +1233,31 @@ const BrainCircuit = ({ size }) => <Activity size={size} />;
 
 export default ShipmentDetail;
 
+
+```
+
+
+=== src/services/firebase.js ===
+```javascript
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getFunctions } from "firebase/functions";
+import { getAuth } from "firebase/auth";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD0PSc39DME7z80FxoyNRT-T-RZJEF1RfI",
+  authDomain: "habit-rpg-blazi-dev.firebaseapp.com",
+  projectId: "habit-rpg-blazi-dev",
+  storageBucket: "habit-rpg-blazi-dev.firebasestorage.app",
+  messagingSenderId: "813647594253",
+  appId: "1:813647594253:web:f55e1b41744b1a2f0c2644"
+};
+
+const app = initializeApp(firebaseConfig);
+
+export const db = getFirestore(app);
+export const functions = getFunctions(app);
+export const auth = getAuth(app);
 
 ```
 
@@ -1138,6 +1279,7 @@ export default ShipmentDetail;
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.22.3"
   },
   "devDependencies": {

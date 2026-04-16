@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ShipmentProvider } from './context/ShipmentContext';
 import Layout from './components/Layout';
-import Dashboard from './views/Dashboard';
-import ShipmentDetail from './views/ShipmentDetail';
-import AddShipment from './views/AddShipment';
-import AddCheckpoint from './views/AddCheckpoint';
+import Dashboard from './pages/Dashboard';
+import ShipmentDetail from './pages/ShipmentDetail';
+import AddShipment from './pages/AddShipment';
+import AddCheckpoint from './pages/AddCheckpoint';
 import LoadingScreen from './components/LoadingScreen';
 import { Toaster } from 'react-hot-toast';
-import { auth } from './firebase';
+import { auth } from './services/firebase';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 function App() {
