@@ -14,21 +14,33 @@ const Dashboard = () => {
         const metrics = getShipmentMetrics(shipment.id);
         
         let riskClass = 'low';
-        let riskText = 'Low Risk';
-        if (metrics.riskScore >= 31) { riskClass = 'medium'; riskText = 'Medium Risk'; }
-        if (metrics.riskScore >= 61) { riskClass = 'high'; riskText = 'High Risk'; }
+        let riskText = 'LOW RISK';
+        let riskIcon = '✅';
+        if (metrics.riskScore >= 31) { riskClass = 'medium'; riskText = 'MEDIUM RISK'; riskIcon = '⚠️'; }
+        if (metrics.riskScore >= 61) { riskClass = 'high'; riskText = 'HIGH RISK'; riskIcon = '🔴'; }
+
+        const primaryCause = metrics.breakdown && metrics.breakdown.length > 0 ? metrics.breakdown[0] : null;
 
         return (
-          <Link to={`/shipment/${shipment.id}`} key={shipment.id} className="card">
+          <Link to={`/shipment/${shipment.id}`} key={shipment.id} className="card" style={{ borderLeft: `4px solid var(--brand-${riskClass === 'high' ? 'danger' : riskClass === 'medium' ? 'warning' : 'success'})` }}>
             <div className="flex-between mb-2">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Package size={20} color="var(--brand-primary)" />
                 <span className="text-lg">{shipment.id}</span>
               </div>
-              <span className={`badge ${riskClass}`}>{riskText}</span>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 'bold', color: `var(--brand-${riskClass === 'high' ? 'danger' : riskClass === 'medium' ? 'warning' : 'success'})` }}>
+                  {riskText} {riskIcon}
+                </div>
+                {primaryCause && (
+                  <div className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+                    Cause: {primaryCause}
+                  </div>
+                )}
+              </div>
             </div>
             
-            <div className="text-sm mb-4" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="text-sm mb-4 mt-4" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <MapPin size={16} />
               {shipment.origin} &rarr; {shipment.destination}
             </div>

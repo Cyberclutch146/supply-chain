@@ -15,8 +15,15 @@ const initialShipments = [
         location: "Shanghai Port",
         timestamp: new Date(Date.now() - 48*60*60*1000).toISOString(),
         status: "In Transit",
+        txHash: "0x8F9B...D2E1",
         idleTime: 12,
-        harshBrakes: 0
+        harshBrakes: 0,
+        trafficLevel: "low",
+        waitTime: 5,
+        vehicleStatus: "ok",
+        weather: "clear",
+        checkpointDelay: 0,
+        routeDeviation: false
       }
     ]
   },
@@ -30,15 +37,29 @@ const initialShipments = [
         location: "Paris Facility",
         timestamp: new Date(Date.now() - 24*60*60*1000).toISOString(),
         status: "Delivered",
+        txHash: "0x3A2C...9F40",
         idleTime: 10,
-        harshBrakes: 2
+        harshBrakes: 2,
+        trafficLevel: "low",
+        waitTime: 10,
+        vehicleStatus: "ok",
+        weather: "clear",
+        checkpointDelay: 0,
+        routeDeviation: false
       },
       {
         location: "Berlin Hub",
         timestamp: new Date(Date.now() - 72*60*60*1000).toISOString(),
         status: "In Transit",
+        txHash: "0x1B4E...7C32",
         idleTime: 5,
-        harshBrakes: 1
+        harshBrakes: 1,
+        trafficLevel: "medium",
+        waitTime: 30,
+        vehicleStatus: "ok",
+        weather: "rain",
+        checkpointDelay: 10,
+        routeDeviation: false
       }
     ]
   }
@@ -62,63 +83,90 @@ export const ShipmentProvider = ({ children }) => {
         if (checkpoint.status === 'Delivered') updatedStatus = 'Delivered';
         if (checkpoint.status === 'Stopped') updatedStatus = 'Delayed';
         
+        // Generate pseudo-random transaction hash to sell the blockchain provenance demo
+        const txHash = '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('').slice(0, 8) + '...' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('').slice(-4);
+
         return {
           ...s,
           status: updatedStatus,
-          checkpoints: [{...checkpoint, timestamp: new Date().toISOString()}, ...s.checkpoints]
+          checkpoints: [{...checkpoint, timestamp: new Date().toISOString(), txHash}, ...s.checkpoints]
         };
       }
       return s;
     }));
   };
 
-  const calculateRisk = ({ idleTime, harshBrakes, stopCount = 0 }) => {
+  const calculateRisk = (c) => {
     let score = 0;
-    if (idleTime > 30) score += 20;
-    if (idleTime > 60) score += 15;
-    if (harshBrakes > 5) score += 20;
-    if (harshBrakes > 10) score += 20;
-    if (stopCount > 3) score += 15;
+    // Driver
+    if (c.idleTime > 60) score += 15;
+    if (c.harshBrakes > 10) score += 15;
+    // Traffic
+    if (c.trafficLevel === "high") score += 15;
+    // Operational
+    if (c.waitTime > 30) score += 10;
+    // Vehicle
+    if (c.vehicleStatus === "warning") score += 10;
+    if (c.vehicleStatus === "breakdown") score += 25;
+    // Environmental
+    if (c.weather === "storm") score += 20;
+    // Compliance
+    if (c.checkpointDelay > 20) score += 10;
+    // Deviation
+    if (c.routeDeviation) score += 20;
+    
     return Math.min(score, 100);
   };
 
   const calculateDelayProbability = (riskScore) => {
-    if (riskScore < 30) return 20;
-    if (riskScore < 60) return 50;
-    return 75;
+    if (riskScore < 20) return 15;
+    if (riskScore < 50) return 40;
+    if (riskScore < 70) return 70;
+    return 85;
   };
 
-  const getDelayReason = ({ idleTime, harshBrakes }) => {
-    if (idleTime > 60 && harshBrakes > 10) return "High idle time + aggressive driving";
-    if (idleTime > 60) return "High idle time at last checkpoint";
-    if (harshBrakes > 10) return "Frequent harsh braking detected";
-    if (idleTime > 30) return "Moderate idle time recorded";
-    return "Normal conditions";
+  const getDelayBreakdown = (c) => {
+    const reasons = [];
+    if (c.weather === "storm") reasons.push("Environmental (Storm)");
+    if (c.vehicleStatus === "breakdown") reasons.push("Vehicle (Breakdown)");
+    if (c.routeDeviation) reasons.push("Route Deviation Alert");
+    if (c.trafficLevel === "high") reasons.push("Traffic Delay");
+    if (c.idleTime > 60 || c.harshBrakes > 10) reasons.push("Driver Anomaly");
+    if (c.vehicleStatus === "warning") reasons.push("Vehicle Warning");
+    if (c.waitTime > 30) reasons.push("Operational Delay");
+    if (c.checkpointDelay > 20) reasons.push("Compliance/Border Delay");
+
+    return reasons;
   };
 
-  // Helper to aggregate risk for a shipment across all its checkpoints
   const getShipmentMetrics = (shipmentId) => {
     const shipment = shipments.find(s => s.id === shipmentId);
     if (!shipment || shipment.checkpoints.length === 0) {
-      return { riskScore: 0, delayProb: 20, reason: "No data", lastMetrics: { idleTime: 0, harshBrakes: 0} };
+      return { riskScore: 0, delayProb: 15, breakdown: [], lastMetrics: {} };
     }
 
-    const latest = shipment.checkpoints[0]; // Assuming index 0 is latest
-    const stopCount = shipment.checkpoints.filter(c => c.status === 'Stopped').length;
+    const latest = shipment.checkpoints[0];
     
-    // Convert to numbers explicitly
-    const idleTime = Number(latest.idleTime) || 0;
-    const harshBrakes = Number(latest.harshBrakes) || 0;
+    const c = {
+      idleTime: Number(latest.idleTime) || 0,
+      harshBrakes: Number(latest.harshBrakes) || 0,
+      trafficLevel: latest.trafficLevel || 'low',
+      waitTime: Number(latest.waitTime) || 0,
+      vehicleStatus: latest.vehicleStatus || 'ok',
+      weather: latest.weather || 'clear',
+      checkpointDelay: Number(latest.checkpointDelay) || 0,
+      routeDeviation: Boolean(latest.routeDeviation)
+    };
 
-    const riskScore = calculateRisk({ idleTime, harshBrakes, stopCount });
+    const riskScore = calculateRisk(c);
     const delayProb = calculateDelayProbability(riskScore);
-    const reason = getDelayReason({ idleTime, harshBrakes });
+    const breakdown = getDelayBreakdown(c);
 
     return { 
       riskScore, 
       delayProb, 
-      reason, 
-      lastMetrics: { idleTime, harshBrakes }
+      breakdown, 
+      lastMetrics: c
     };
   };
 
@@ -129,7 +177,7 @@ export const ShipmentProvider = ({ children }) => {
       addCheckpoint,
       calculateRisk,
       calculateDelayProbability,
-      getDelayReason,
+      getDelayBreakdown,
       getShipmentMetrics
     }}>
       {children}
