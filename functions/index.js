@@ -68,40 +68,96 @@ exports.logCheckpoint = onCall({
   };
 });
 
+const calculateRisk = (c) => {
+  let score = 0;
+  if (c.idleTime > 60) score += 15;
+  if (c.harshBrakes > 10) score += 15;
+  if (c.trafficLevel === "high") score += 15;
+  if (c.waitTime > 30) score += 10;
+  if (c.vehicleStatus === "warning") score += 10;
+  if (c.vehicleStatus === "breakdown") score += 25;
+  if (c.weather === "storm") score += 20;
+  if (c.checkpointDelay > 20) score += 10;
+  if (c.routeDeviation) score += 20;
+  return Math.min(score, 100);
+};
+
+const getDelayProbability = (risk) => {
+  if (risk < 30) return 20;
+  if (risk < 60) return 50;
+  return 75;
+};
+
+const getDelayBreakdown = (c) => {
+  const factors = [
+    { id: 'weather', label: "Environmental (Storm)", weight: c.weather === "storm" ? 100 : 0 },
+    { id: 'vehicle', label: "Vehicle Breakdown", weight: c.vehicleStatus === "breakdown" ? 90 : 0 },
+    { id: 'deviation', label: "Route Deviation", weight: c.routeDeviation ? 80 : 0 },
+    { id: 'traffic', label: "Traffic Congestion", weight: c.trafficLevel === "high" ? 70 : 0 },
+    { id: 'driver', label: "Driver Anomaly", weight: (c.idleTime > 60 || c.harshBrakes > 10) ? 60 : 0 },
+    { id: 'warning', label: "Vehicle Warning", weight: c.vehicleStatus === "warning" ? 50 : 0 },
+    { id: 'wait', label: "Operational Delay", weight: c.waitTime > 30 ? 40 : 0 },
+    { id: 'compliance', label: "Compliance Delay", weight: c.checkpointDelay > 20 ? 30 : 0 },
+  ].filter(f => f.weight > 0).sort((a, b) => b.weight - a.weight);
+
+  if (factors.length === 0) {
+    return {
+      primary: "Normal Conditions",
+      secondary: null,
+      explanationText: "Current logistics flow is optimal with no significant risk factors detected."
+    };
+  }
+
+  const primary = factors[0].label;
+  const secondary = factors.length > 1 ? factors[1].label : null;
+
+  let explanationText = "";
+  if (secondary) {
+    explanationText = `${primary} combined with ${secondary.toLowerCase()} is significantly increasing delay probability.`;
+  } else {
+    explanationText = `${primary} alone is significantly increasing delay risk.`;
+  }
+
+  return { primary, secondary, explanationText };
+};
+
+
 exports.analyzeRisk = onCall({
     cors: true,
   }, async (request) => {
   const checkpointData = request.data;
+  const c = {
+    idleTime: Number(checkpointData.idleTime) || 0,
+    harshBrakes: Number(checkpointData.harshBrakes) || 0,
+    trafficLevel: checkpointData.trafficLevel || 'low',
+    waitTime: Number(checkpointData.waitTime) || 0,
+    vehicleStatus: checkpointData.vehicleStatus || 'ok',
+    weather: checkpointData.weather || 'clear',
+    checkpointDelay: Number(checkpointData.checkpointDelay) || 0,
+    routeDeviation: Boolean(checkpointData.routeDeviation)
+  };
 
-  // TASK 4 - WEATHER INTEGRATION (LIGHT MOCK)
-  let weatherCondition = "clear";
-
-  if (USE_REAL_SERVICES) {
-      // fetch weather based on location
-      // const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${checkpointData.location}&appid=YOUR_API_KEY`);
-      // weatherCondition = weatherRes.data.weather[0].main.toLowerCase();
-  } else {
-      // return mock weather
-      weatherCondition = "storm";
-  }
-
-  // TASK 3 - AI INTEGRATION (HYBRID)
   let aiResponse = {};
 
   if (USE_REAL_SERVICES) {
       // Prepare prompt
-      const prompt = `Analyze risk for shipment at ${checkpointData.location}. Weather: ${weatherCondition}. Delays: ${checkpointData.idleTime}...`;
-      // Prepare API call (e.g. Gemini AI or OpenAI)
-      // const apiResult = await myAiClient.generateContent(prompt);
-      // aiResponse = JSON.parse(apiResult.text);
+      const prompt = `Analyze risk for shipment at ${checkpointData.location}. Weather: ${c.weather}. Delays: ${c.idleTime}...`;
+      // AI logic here using real services
+      // ...
   } else {
       // Simulate API processing delay
       await new Promise(res => setTimeout(res, 1500));
       
+      const riskScore = calculateRisk(c);
+      const delayProb = getDelayProbability(riskScore);
+      const breakdown = getDelayBreakdown(c);
+
       aiResponse = {
-          primary: "Environmental (Storm)",
-          secondary: "Traffic",
-          explanationText: "Severe weather combined with congestion is increasing delay risk."
+          riskScore,
+          delayProb,
+          primary: breakdown.primary,
+          secondary: breakdown.secondary,
+          explanationText: breakdown.explanationText
       };
   }
 

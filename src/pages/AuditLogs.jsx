@@ -36,7 +36,7 @@ const AuditLogs = () => {
           <h1 className="font-headline text-3xl font-bold text-on-surface">Immutable Audit Logs</h1>
           <p className="text-on-surface-variant text-sm mt-1">Cryptographic ledger entries for all global transits.</p>
         </div>
-        <div className="flex gap-2 bg-surface-container-low p-1 border border-[rgba(69,72,79,0.3)] rounded-lg">
+        <div className="flex gap-2 glass-form p-1 rounded-lg">
           <button 
             onClick={() => setFilter('all')} 
             className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${filter === 'all' ? 'bg-[#1c2028] text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
@@ -58,8 +58,8 @@ const AuditLogs = () => {
         </div>
       </header>
 
-      <div className="flex-1 bg-[#1c2028]/80 backdrop-blur-md border border-[rgba(69,72,79,0.15)] rounded-xl flex flex-col overflow-hidden">
-        <div className="bg-surface-container-lowest/50 border-b border-[rgba(69,72,79,0.2)] px-6 py-3 flex text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+      <div className="flex-1 glass-card border border-[rgba(255,255,255,0.05)] rounded-xl flex flex-col overflow-hidden">
+        <div className="bg-transparent border-b border-[rgba(255,255,255,0.08)] px-6 py-3 flex text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
           <div className="w-12">Stat</div>
           <div className="w-48">Timestamp</div>
           <div className="flex-1">Asset Identity / Hash Signatures</div>
@@ -67,7 +67,7 @@ const AuditLogs = () => {
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {filteredLogs.map((log, i) => (
-            <div key={i} className="flex px-6 py-4 border-b border-[rgba(69,72,79,0.1)] hover:bg-surface-container-low transition-colors items-start">
+            <div key={i} className="flex px-6 py-4 border-b border-[rgba(255,255,255,0.05)] hover:bg-[#ffffff05] transition-colors items-start">
               <div className="w-12 pt-1 mt-0.5">
                 <span className={`material-symbols-outlined text-xl ${log.verified ? 'text-primary' : 'text-tertiary'}`}>
                   {log.verified ? 'lock' : 'gpp_bad'}
@@ -79,7 +79,7 @@ const AuditLogs = () => {
               </div>
               <div className="flex-1 pr-4">
                 <div className="text-sm font-medium text-on-surface mb-1">{log.shipmentItem} <span className="opacity-50 font-normal">({log.shipmentId.substring(0,8)})</span></div>
-                <div className="bg-[#12141a] p-2 rounded flex flex-col gap-1 border border-[rgba(69,72,79,0.15)]">
+                <div className="glass-subtle p-2 rounded flex flex-col gap-1">
                   <div className="flex text-[10px] items-center">
                     <span className="text-on-surface-variant/40 w-8">TX</span>
                     <span className="font-mono text-primary/80 truncate block">{log.txHash}</span>

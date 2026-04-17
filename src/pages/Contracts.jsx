@@ -55,7 +55,7 @@ const Contracts = () => {
 
       {isDeploying && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
-          <div className="bg-surface-container-low border border-[rgba(69,72,79,0.3)] p-8 rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="glass-form p-8 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-headline text-2xl font-bold text-on-surface">Configure Escrow</h2>
               <span className="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface transition-colors" onClick={() => setIsDeploying(false)}>close</span>
@@ -64,21 +64,21 @@ const Contracts = () => {
             <form onSubmit={handleDeploy} className="space-y-4">
               <div>
                 <label className="text-xs text-on-surface-variant font-medium mb-1 block">Cargo Description</label>
-                <input required value={contractDetails.item} onChange={e => setContractDetails({...contractDetails, item: e.target.value})} type="text" className="w-full bg-surface-container-highest border border-[rgba(69,72,79,0.2)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="e.g. 500x NVIDIA H100 GPUs" />
+                <input required value={contractDetails.item} onChange={e => setContractDetails({...contractDetails, item: e.target.value})} type="text" className="w-full bg-[#1c2028] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="e.g. 500x NVIDIA H100 GPUs" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-on-surface-variant font-medium mb-1 block">Origin Node</label>
-                  <input required value={contractDetails.origin} onChange={e => setContractDetails({...contractDetails, origin: e.target.value})} type="text" className="w-full bg-surface-container-highest border border-[rgba(69,72,79,0.2)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="e.g. Taipei" />
+                  <input required value={contractDetails.origin} onChange={e => setContractDetails({...contractDetails, origin: e.target.value})} type="text" className="w-full bg-[#1c2028] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="e.g. Taipei" />
                 </div>
                 <div>
                   <label className="text-xs text-on-surface-variant font-medium mb-1 block">Destination Node</label>
-                  <input required value={contractDetails.destination} onChange={e => setContractDetails({...contractDetails, destination: e.target.value})} type="text" className="w-full bg-surface-container-highest border border-[rgba(69,72,79,0.2)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="e.g. San Jose" />
+                  <input required value={contractDetails.destination} onChange={e => setContractDetails({...contractDetails, destination: e.target.value})} type="text" className="w-full bg-[#1c2028] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="e.g. San Jose" />
                 </div>
               </div>
               <div>
                 <label className="text-xs text-on-surface-variant font-medium mb-1 block">Escrow Value (USD)</label>
-                <input required value={contractDetails.value} onChange={e => setContractDetails({...contractDetails, value: e.target.value})} type="number" min="0" className="w-full bg-surface-container-highest border border-[rgba(69,72,79,0.2)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="15000000" />
+                <input required value={contractDetails.value} onChange={e => setContractDetails({...contractDetails, value: e.target.value})} type="number" min="0" className="w-full bg-[#1c2028] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="15000000" />
               </div>
               
               <div className="pt-4">
@@ -93,7 +93,7 @@ const Contracts = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {shipments.map(s => (
-          <div key={s.id} className="bg-[#1c2028]/80 backdrop-blur-md rounded-xl p-6 border border-[rgba(69,72,79,0.15)] flex flex-col hover:shadow-[0_0_20px_rgba(80,255,176,0.05)] transition-all">
+          <div key={s.id} className="glass-card rounded-xl p-6 flex flex-col neon-border-hover transition-all">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded tracking-wide max-w-[200px] truncate block">{s.id}</span>

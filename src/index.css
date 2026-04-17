@@ -12,13 +12,27 @@
 @layer components {
   /* UI Components extracted from Stitch */
   .glass-card {
-    background: rgba(28, 32, 40, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(69, 72, 79, 0.15);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    background: rgba(28, 32, 40, 0.5); /* adjusted for readability */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
   }
   
+  .glass-subtle {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .glass-form {
+    background: rgba(10, 12, 16, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
   .glass-panel {
     background-color: rgba(28, 32, 40, 0.8);
     backdrop-filter: blur(12px);

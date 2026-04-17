@@ -21,7 +21,7 @@ const NodeStatus = () => {
           <p className="text-on-surface-variant text-sm mt-1">Real-time status of decentralized infrastructure and verifiers.</p>
         </div>
         <div className="flex gap-4">
-          <div className="bg-surface-container-low px-4 py-2 border border-[rgba(69,72,79,0.3)] rounded-lg flex items-center gap-3">
+          <div className="glass-form px-4 py-2 rounded-lg flex items-center gap-3">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_#50ffb0]"></div>
             <span className="text-sm font-medium text-on-surface">Consensus: Healthy</span>
           </div>
@@ -29,26 +29,26 @@ const NodeStatus = () => {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-[#1c2028]/80 backdrop-blur-md rounded-xl p-6 border border-[rgba(69,72,79,0.15)] flex flex-col justify-between">
+        <div className="glass-card rounded-xl p-6 flex flex-col justify-between">
           <div className="text-sm text-on-surface-variant font-medium mb-2">Global Uptime (Average)</div>
           <div className="font-headline text-3xl font-bold text-primary">99.85%</div>
         </div>
-        <div className="bg-[#1c2028]/80 backdrop-blur-md rounded-xl p-6 border border-[rgba(69,72,79,0.15)] flex flex-col justify-between">
+        <div className="glass-card rounded-xl p-6 flex flex-col justify-between">
           <div className="text-sm text-on-surface-variant font-medium mb-2">Total Verifications (24H)</div>
           <div className="font-headline text-3xl font-bold text-on-surface">
             {15420 + shipments.reduce((acc, s) => acc + (s.checkpoints?.length || 0), 0)}
           </div>
         </div>
-        <div className="bg-[#1c2028]/80 backdrop-blur-md rounded-xl p-6 border border-[rgba(69,72,79,0.15)] flex flex-col justify-between">
+        <div className="glass-card rounded-xl p-6 flex flex-col justify-between">
           <div className="text-sm text-on-surface-variant font-medium mb-2">Network Load</div>
           <div className="font-headline text-3xl font-bold text-secondary-container">Moderate</div>
         </div>
       </div>
 
-      <div className="bg-[#1c2028]/80 backdrop-blur-md border border-[rgba(69,72,79,0.15)] rounded-2xl overflow-hidden">
+      <div className="glass-card rounded-2xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[rgba(69,72,79,0.3)] bg-surface-container-lowest/50">
+            <tr className="border-b border-[rgba(255,255,255,0.08)] bg-transparent">
               <th className="py-4 px-6 text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Node Identity</th>
               <th className="py-4 px-6 text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Location / Region</th>
               <th className="py-4 px-6 text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Role</th>
@@ -56,12 +56,12 @@ const NodeStatus = () => {
               <th className="py-4 px-6 text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Network Stats</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[rgba(69,72,79,0.15)]">
+          <tbody className="divide-y divide-[rgba(255,255,255,0.05)]">
             {baseNodes.map((n, i) => (
-              <tr key={n.id} className="hover:bg-surface-container-high transition-colors group">
+              <tr key={n.id} className="hover:bg-[#ffffff05] transition-colors group">
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-surface-container-lowest border border-[rgba(69,72,79,0.3)] flex items-center justify-center font-mono text-xs text-on-surface-variant">
+                    <div className="w-8 h-8 rounded glass-subtle border border-[rgba(255,255,255,0.05)] flex items-center justify-center font-mono text-xs text-on-surface-variant">
                       {n.id}
                     </div>
                     <div>
@@ -84,7 +84,7 @@ const NodeStatus = () => {
                       <span className={n.uptime < 99 ? 'text-tertiary' : 'text-on-surface-variant'}>{n.uptime}% uptime</span>
                       <span className="text-on-surface-variant">{n.load}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-surface-container-lowest rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                       <div 
                         className={`h-full rounded-full transition-all ${n.load > 75 ? 'bg-tertiary' : 'bg-primary'}`}
                         style={{ width: `${n.load}%` }}

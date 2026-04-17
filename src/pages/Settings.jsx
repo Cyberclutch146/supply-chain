@@ -36,7 +36,7 @@ const Settings = () => {
 
         <form onSubmit={handleSave} className="space-y-8">
           {/* Node Identity Card */}
-          <div className="bg-[#1c2028]/80 backdrop-blur-md border border-[rgba(69,72,79,0.15)] rounded-2xl p-6">
+          <div className="glass-card border border-[rgba(255,255,255,0.05)] rounded-2xl p-6">
             <h2 className="font-headline text-lg font-bold text-on-surface mb-2 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">badge</span>
               Node Identity
@@ -48,12 +48,12 @@ const Settings = () => {
                 <label className="text-xs text-on-surface-variant font-medium mb-1 block">Local Node ID</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm font-mono">Node-</span>
-                  <input required value={nodeId} onChange={e => setNodeId(e.target.value)} type="text" className="w-full bg-surface-container-highest border border-[rgba(69,72,79,0.2)] rounded-lg pl-14 pr-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary font-mono" placeholder="042" />
+                  <input required value={nodeId} onChange={e => setNodeId(e.target.value)} type="text" className="w-full bg-[#1c2028] border border-[rgba(255,255,255,0.1)] rounded-lg pl-14 pr-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary font-mono" placeholder="042" />
                 </div>
               </div>
               <div>
                 <label className="text-xs text-on-surface-variant font-medium mb-1 block">Cryptographic Key Role</label>
-                <select className="w-full bg-surface-container-highest border border-[rgba(69,72,79,0.2)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary opacity-70 cursor-not-allowed" disabled>
+                <select className="w-full bg-[#1c2028] border border-[rgba(255,255,255,0.1)] rounded-lg px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-primary opacity-70 cursor-not-allowed" disabled>
                   <option>Primary Verifier</option>
                   <option>Read-only Auditor</option>
                 </select>
@@ -63,7 +63,7 @@ const Settings = () => {
           </div>
 
           {/* AI Threat Configuration */}
-          <div className="bg-[#1c2028]/80 backdrop-blur-md border border-[rgba(69,72,79,0.15)] rounded-2xl p-6">
+          <div className="glass-card border border-[rgba(255,255,255,0.05)] rounded-2xl p-6">
             <h2 className="font-headline text-lg font-bold text-on-surface mb-2 flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary-container">psychology</span>
               AI Risk Engine
@@ -80,7 +80,7 @@ const Settings = () => {
                 min="0" max="100" 
                 value={threshold} 
                 onChange={(e) => setRiskThreshold(e.target.value)}
-                className="w-full h-2 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" 
+                className="w-full h-2 bg-[rgba(255,255,255,0.1)] rounded-lg appearance-none cursor-pointer accent-primary" 
               />
               <div className="flex justify-between text-[10px] text-on-surface-variant mt-2 font-mono">
                 <span>0% (Hyper Sensitive)</span>
@@ -90,12 +90,12 @@ const Settings = () => {
           </div>
 
           {/* Network Connection */}
-          <div className="bg-[#1c2028]/80 backdrop-blur-md border border-[rgba(69,72,79,0.15)] rounded-2xl p-6 opacity-60">
+          <div className="glass-card border border-[rgba(255,255,255,0.05)] rounded-2xl p-6 opacity-60">
             <h2 className="font-headline text-lg font-bold text-on-surface mb-2 flex items-center gap-2">
               <span className="material-symbols-outlined text-on-surface-variant">router</span>
               Network Layer
             </h2>
-            <div className="flex items-center gap-4 bg-surface-container-highest p-4 rounded-lg border border-[rgba(69,72,79,0.2)]">
+            <div className="flex items-center gap-4 glass-subtle p-4 rounded-lg border border-[rgba(255,255,255,0.05)]">
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary">
                 <span className="material-symbols-outlined text-primary">wifi_tethering</span>
               </div>

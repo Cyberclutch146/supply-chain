@@ -16,16 +16,24 @@ export const useShipments = () => {
 export const ShipmentProvider = ({ children }) => {
   const [shipmentsData, setShipmentsData] = useState([]);
   const [checkpointsData, setCheckpointsData] = useState([]);
+  const [isLoadingShipments, setIsLoadingShipments] = useState(true);
 
   useEffect(() => {
+    let shipmentsLoaded = false;
+    let checkpointsLoaded = false;
+
     const unsubShipments = onSnapshot(collection(db, 'shipments'), (snapshot) => {
       const ships = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setShipmentsData(ships);
+      shipmentsLoaded = true;
+      if (shipmentsLoaded && checkpointsLoaded) setIsLoadingShipments(false);
     });
 
     const unsubCheckpoints = onSnapshot(collection(db, 'checkpoints'), (snapshot) => {
       const chks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setCheckpointsData(chks);
+      checkpointsLoaded = true;
+      if (shipmentsLoaded && checkpointsLoaded) setIsLoadingShipments(false);
     });
 
     return () => {
@@ -54,42 +62,51 @@ export const ShipmentProvider = ({ children }) => {
         createdBy: user ? user.uid : 'anonymous'
       });
     } catch (e) {
-      console.error(e);
+      console.error("Failed to add shipment:", e);
+      throw e;
     }
   };
 
-  const addCheckpoint = async (shipmentId, checkpoint, isTamperedDemo = false) => {
+  const addCheckpoint = async (shipmentId, checkpoint, isTamperedDemo = false, onProgressUpdate) => {
     try {
       let newCheckpoint = {
         ...checkpoint,
         timestamp: new Date().toISOString()
       };
 
-      // 1. Backend Hashing & Blockchain tx generation via Cloud Function
-      const logCheckpointFn = httpsCallable(functions, 'logCheckpoint');
-      const logRes = await logCheckpointFn(newCheckpoint);
-      const { verificationHash, txHash } = logRes.data;
-
-      // Corrupt data logic for Tampering Demo
-      let storedCheckpoint = { ...newCheckpoint };
       if (isTamperedDemo) {
-        storedCheckpoint.idleTime = (Number(storedCheckpoint.idleTime) || 0) + 15;
+        newCheckpoint.idleTime = (Number(newCheckpoint.idleTime) || 0) + 15;
       }
 
-      // 2. AI Risk Analysis via Cloud Function
-      const analyzeRiskFn = httpsCallable(functions, 'analyzeRisk');
-      const aiRes = await analyzeRiskFn(storedCheckpoint);
-      const aiInsight = aiRes.data;
+      if (onProgressUpdate) onProgressUpdate('Signing');
+      const logCheckpointFunc = httpsCallable(functions, 'logCheckpoint');
+      const logRes = await logCheckpointFunc(newCheckpoint);
+      const { verificationHash, txHash } = logRes.data;
+
+      if (onProgressUpdate) onProgressUpdate('Broadcasting');
+      const analyzeRiskFunc = httpsCallable(functions, 'analyzeRisk');
+      const aiRes = await analyzeRiskFunc(newCheckpoint);
+      
+      if (onProgressUpdate) onProgressUpdate('Finalizing');
+      const aiData = aiRes.data || {};
 
       const user = auth.currentUser;
       const checkpointData = {
-        ...storedCheckpoint,
+        ...newCheckpoint,
         shipmentId,
         verificationHash,
         txHash,
         verified: !isTamperedDemo,
-        aiInsight,
-        createdBy: user ? user.uid : 'anonymous'
+        createdBy: user ? user.uid : 'anonymous',
+        aiAnalysis: {
+          riskScore: aiData.riskScore || 0,
+          delayProb: aiData.delayProb || 20,
+          primary: aiData.primary || 'Analysis unavailable',
+          secondary: aiData.secondary || null,
+          explanationText: aiData.explanationText || 'Risk analysis service temporarily unavailable.',
+          analysisTimestamp: Date.now(),
+          analysisVersion: "v1"
+        }
       };
 
       await addDoc(collection(db, 'checkpoints'), checkpointData);
@@ -101,49 +118,39 @@ export const ShipmentProvider = ({ children }) => {
       const shipmentRef = doc(db, 'shipments', shipmentId);
       await updateDoc(shipmentRef, { status: isTamperedDemo ? 'Tampered' : updatedStatus });
       
+      if (onProgressUpdate) onProgressUpdate('Confirmed');
+
     } catch (e) {
-      console.error(e);
+      console.error("Failed to add checkpoint", e);
+      throw e; // Rethrow to let the UI component handle it with a toast message
     }
   };
 
   const verifyHash = (checkpoint) => {
-    // In a true hybrid model, the client shouldn't hash locally. 
-    // We trust the backend signed `verified` flag for demo purposes.
-    return checkpoint.verified;
-  };
-
-  const calculateRisk = (c) => {
-    let score = 0;
-    if (c.idleTime > 60) score += 15;
-    if (c.harshBrakes > 10) score += 15;
-    if (c.trafficLevel === "high") score += 15;
-    if (c.waitTime > 30) score += 10;
-    if (c.vehicleStatus === "warning") score += 10;
-    if (c.vehicleStatus === "breakdown") score += 25;
-    if (c.weather === "storm") score += 20;
-    if (c.checkpointDelay > 20) score += 10;
-    if (c.routeDeviation) score += 20;
-    return Math.min(score, 100);
-  };
-
-  const getDelayProbability = (risk) => {
-    if (risk < 30) return 20;
-    if (risk < 60) return 50;
-    return 75;
+    // Basic local hash verification check could be here if required,
+    // though real verification should happen backend/on-chain.
+    return checkpoint.verified; 
   };
 
   const getShipmentMetrics = (shipmentId) => {
     const shipment = shipments.find(s => s.id === shipmentId);
-    if (!shipment || shipment.checkpoints.length === 0) {
+    
+    if (!shipment || !shipment.checkpoints || shipment.checkpoints.length === 0) {
       return { 
         riskScore: 0, 
-        delayProb: getDelayProbability(0), 
-        breakdown: { primary: "Normal Conditions", secondary: null, explanationText: "Awaiting data" }, 
+        delayProb: 20, 
+        breakdown: {
+          primary: "Normal Conditions",
+          secondary: null,
+          explanationText: "Awaiting tracking events."
+        }, 
         lastMetrics: {} 
       };
     }
 
-    const latest = shipment.checkpoints[0];
+    const latest = shipment.checkpoints.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+    const aiAnalysis = latest.aiAnalysis || {};
+
     const c = {
       idleTime: Number(latest.idleTime) || 0,
       harshBrakes: Number(latest.harshBrakes) || 0,
@@ -155,10 +162,14 @@ export const ShipmentProvider = ({ children }) => {
       routeDeviation: Boolean(latest.routeDeviation)
     };
 
-    const riskScore = calculateRisk(c);
-    const delayProb = getDelayProbability(riskScore);
-    const breakdown = latest.aiInsight || {
-      primary: "Analyzing...", secondary: null, explanationText: "Awaiting AI insight."
+    const riskScore = aiAnalysis.riskScore || 0;
+    const delayProb = aiAnalysis.delayProb || 20;
+    const breakdown = {
+       primary: aiAnalysis.primary || "Analysis unavailable",
+       secondary: aiAnalysis.secondary || null,
+       explanationText: aiAnalysis.explanationText || "Current logistics flow is optimal.",
+       analysisVersion: aiAnalysis.analysisVersion,
+       analysisTimestamp: aiAnalysis.analysisTimestamp
     };
 
     return { riskScore, delayProb, breakdown, lastMetrics: c };
@@ -167,11 +178,10 @@ export const ShipmentProvider = ({ children }) => {
   return (
     <ShipmentContext.Provider value={{
       shipments,
+      isLoadingShipments,
       addShipment,
       addCheckpoint,
       verifyHash,
-      calculateRisk,
-      getDelayProbability,
       getShipmentMetrics
     }}>
       {children}

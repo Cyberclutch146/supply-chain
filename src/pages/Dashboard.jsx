@@ -69,12 +69,23 @@ const Dashboard = () => {
       </header>
 
       {/* Bento Grid Layout */}
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-12 gap-6 relative">
+        <div className="absolute -top-12 right-0 text-on-surface-variant text-sm flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+          Last Updated: {(() => {
+            const allCheckpoints = shipments.flatMap(s => s.checkpoints || []);
+            if (!allCheckpoints.length) return "Just now";
+            const latest = new Date(Math.max(...allCheckpoints.map(c => new Date(c.timestamp))));
+            const mins = Math.floor((new Date() - latest) / 60000);
+            return mins <= 0 ? "Just now" : `${mins} min${mins !== 1 ? 's' : ''} ago`;
+          })()}
+        </div>
+
         {/* Macro Stats (Left Col, Span 8) */}
         <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
           {/* Top Row Stats */}
           <div className="grid grid-cols-3 gap-6">
-            <div className="bg-[#1c2028]/80 backdrop-blur-md p-6 rounded-xl border border-[rgba(69,72,79,0.15)] flex flex-col justify-between shadow-[0_0_40px_rgba(80,255,176,0.08)] relative overflow-hidden group">
+            <div className="glass-card p-6 rounded-xl flex flex-col justify-between shadow-[0_0_40px_rgba(80,255,176,0.08)] relative overflow-hidden group">
               <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
               <div className="flex justify-between items-start mb-4">
                 <span className="text-on-surface-variant text-sm font-medium">Total Supply Chain Value</span>
@@ -86,7 +97,7 @@ const Dashboard = () => {
               </div>
             </div>
             
-            <div className="bg-[#1c2028]/80 backdrop-blur-md p-6 rounded-xl border border-[rgba(69,72,79,0.15)] flex flex-col justify-between hover:shadow-[inset_0_0_0_1px_#50ffb0] transition-all cursor-pointer">
+            <div className="glass-card p-6 rounded-xl flex flex-col justify-between neon-border-hover transition-all cursor-pointer">
               <div className="flex justify-between items-start mb-4">
                 <span className="text-on-surface-variant text-sm font-medium">Active Nodes</span>
                 <span className="material-symbols-outlined text-primary text-xl">share</span>
@@ -97,7 +108,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="bg-[#1c2028]/80 backdrop-blur-md p-6 rounded-xl border border-[rgba(69,72,79,0.15)] flex flex-col justify-between hover:shadow-[inset_0_0_0_1px_#50ffb0] transition-all cursor-pointer">
+            <div className="glass-card p-6 rounded-xl flex flex-col justify-between neon-border-hover transition-all cursor-pointer">
               <div className="flex justify-between items-start mb-4">
                 <span className="text-on-surface-variant text-sm font-medium">Flagged Risks</span>
                 <span className="material-symbols-outlined text-tertiary text-xl">warning</span>
@@ -110,7 +121,7 @@ const Dashboard = () => {
           </div>
 
           {/* Global Network Map */}
-          <div className="bg-[#1c2028]/80 backdrop-blur-md rounded-xl border border-[rgba(69,72,79,0.15)] p-6 flex-1 min-h-[400px] relative overflow-hidden hover:shadow-[inset_0_0_0_1px_#50ffb0] transition-all cursor-pointer">
+          <div className="glass-card rounded-xl p-6 flex-1 min-h-[400px] relative overflow-hidden neon-border-hover transition-all cursor-pointer">
             <div className="flex justify-between items-center mb-6 relative z-10">
               <h3 className="font-headline text-lg font-bold text-on-surface">Global Network Status</h3>
               <div className="flex gap-3">
@@ -146,7 +157,7 @@ const Dashboard = () => {
         {/* Right Col, Span 4 (Predictive Risk & Active Ledger) */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
           {/* Predictive Risk Nodes */}
-          <div className="bg-surface-container-low rounded-xl p-6 border border-[rgba(69,72,79,0.15)] flex flex-col h-[250px]">
+          <div className="glass-card rounded-xl p-6 flex flex-col h-[250px]">
             <h3 className="font-headline text-lg font-bold text-on-surface mb-4">Predictive Risk Summary</h3>
             <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
               {highRiskInsights.length === 0 ? (
@@ -155,7 +166,7 @@ const Dashboard = () => {
                 </div>
               ) : (
                 highRiskInsights.map(({ shipment, metrics }, idx) => (
-                  <div key={shipment.id} className={`p-3 rounded-lg flex items-start gap-3 border ${metrics.riskScore > 60 ? 'bg-tertiary/5 border-tertiary/20' : 'bg-surface-container-highest border-[rgba(69,72,79,0.15)]'}`}>
+                  <div key={shipment.id} className={`p-3 rounded-lg flex items-start gap-3 glass-subtle`}>
                     <span className={`material-symbols-outlined mt-0.5 ${metrics.riskScore > 60 ? 'text-tertiary' : 'text-secondary-container'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
                       {metrics.riskScore > 60 ? 'warning' : 'info'}
                     </span>
@@ -173,7 +184,7 @@ const Dashboard = () => {
           </div>
 
           {/* Active Fleet Ledger (Interactive Cards) */}
-          <div className="bg-[#1c2028]/80 backdrop-blur-md rounded-xl border border-[rgba(69,72,79,0.15)] p-6 flex-1 flex flex-col min-h-[350px]">
+          <div className="glass-card rounded-xl p-6 flex-1 flex flex-col min-h-[350px]">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-headline text-lg font-bold text-on-surface">Active Shipment Ledger</h3>
               <span className="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">more_horiz</span>
@@ -207,7 +218,7 @@ const Dashboard = () => {
                       <div className={`absolute left-0 top-1 w-6 h-6 rounded-full ${statusBg} flex items-center justify-center border border-${statusColor} z-10 group-hover:scale-110 transition-transform`}>
                         <div className={`w-2 h-2 rounded-full ${dotBg}`}></div>
                       </div>
-                      <div className={`bg-surface-container-high p-4 rounded-lg border border-[rgba(69,72,79,0.15)] hover:shadow-[inset_0_0_0_1px_#50ffb0] transition-all cursor-pointer`}>
+                      <div className={`glass-subtle p-4 rounded-lg neon-border-hover transition-all cursor-pointer`}>
                         <div className="flex justify-between items-start mb-2">
                           <span className={`text-xs font-mono text-${statusColor} bg-${statusColor}/10 px-2 py-0.5 rounded`}>
                             {latestCheckpoint ? latestCheckpoint.txHash?.substring(0, 8) + '...' + latestCheckpoint.txHash?.slice(-3) : shipment.id.substring(0,8)}

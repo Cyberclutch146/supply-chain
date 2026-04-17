@@ -15,9 +15,12 @@ const Tracking = () => {
 
   const activeShipment = shipments.find(s => s.id === selectedShipment) || null;
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleAddCheckpoint = async (e) => {
     e.preventDefault();
     if (!activeShipment) return;
+    setIsSubmitting(true);
     
     // Simulate some realistic mock data for AI
     const checkpoint = {
@@ -33,15 +36,19 @@ const Tracking = () => {
       routeDeviation: false
     };
 
-    const loadingToast = toast.loading('Simulating Cryptographic Hashing & AI Analysis...');
+    const loadingToast = toast.loading('Initializing Handshake...');
     try {
-      await addCheckpoint(activeShipment.id, checkpoint, isTampered);
-      toast.success('Zero-Knowledge Proof Verified and Logged', { id: loadingToast });
+      await addCheckpoint(activeShipment.id, checkpoint, isTampered, (statusMsg) => {
+        toast.loading(`${statusMsg}...`, { id: loadingToast });
+      });
+      toast.success('Confirmed ✅', { id: loadingToast });
       setIsAdding(false);
       setLocation('');
       setIsTampered(false);
     } catch (e) {
-      toast.error('Failed to log telemetry', { id: loadingToast });
+      toast.error('Transaction Failed', { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -76,7 +83,7 @@ const Tracking = () => {
       </div>
 
       {/* Right side: Active Shipment Telemetry Timeline */}
-      <div className="flex-1 bg-[#1c2028]/80 backdrop-blur-md rounded-2xl border border-[rgba(69,72,79,0.15)] overflow-hidden flex flex-col relative mt-8">
+      <div className="flex-1 glass-card rounded-2xl flex flex-col relative mt-8">
         {!activeShipment ? (
           <div className="flex-1 flex flex-col items-center justify-center opacity-30">
             <span className="material-symbols-outlined text-6xl mb-4">radar</span>
@@ -84,7 +91,7 @@ const Tracking = () => {
           </div>
         ) : (
           <>
-            <div className="p-6 border-b border-[rgba(69,72,79,0.15)] bg-surface-container-lowest/50 flex justify-between items-center z-10">
+            <div className="p-6 border-b border-[rgba(255,255,255,0.08)] bg-transparent flex justify-between items-center z-10">
               <div>
                 <h2 className="font-headline text-2xl font-bold text-on-surface">{activeShipment.item}</h2>
                 <div className="text-xs font-mono text-primary mt-1">Contract: {activeShipment.id}</div>
@@ -100,7 +107,7 @@ const Tracking = () => {
             <div className="flex-1 overflow-y-auto p-6 relative">
               
               {isAdding && (
-                <div className="mb-8 bg-surface-container-low border border-[rgba(69,72,79,0.2)] p-6 rounded-xl animate-in slide-in-from-top-4 duration-300">
+                <div className="mb-8 glass-form p-6 rounded-xl animate-in slide-in-from-top-4 duration-300">
                   <h3 className="font-headline font-semibold text-lg mb-4 text-on-surface flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary text-lg">podcasts</span>
                     Node Data Ingestion
@@ -109,11 +116,11 @@ const Tracking = () => {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
                         <label className="text-xs text-on-surface-variant font-medium mb-1 block">Location</label>
-                        <input required value={location} onChange={e => setLocation(e.target.value)} type="text" className="w-full bg-surface-container-highest border border-[rgba(69,72,79,0.2)] rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="e.g. SGP Port" />
+                        <input required value={location} onChange={e => setLocation(e.target.value)} type="text" className="w-full bg-[#1c2028] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary" placeholder="e.g. SGP Port" />
                       </div>
                       <div>
                         <label className="text-xs text-on-surface-variant font-medium mb-1 block">Status Report</label>
-                        <select value={status} onChange={e => setStatus(e.target.value)} className="w-full bg-surface-container-highest border border-[rgba(69,72,79,0.2)] rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary">
+                        <select value={status} onChange={e => setStatus(e.target.value)} className="w-full bg-[#1c2028] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary">
                           <option>In Transit</option>
                           <option>Stopped</option>
                           <option>Delivered</option>
@@ -123,7 +130,7 @@ const Tracking = () => {
                     <div className="grid grid-cols-2 gap-4 mb-6">
                       <div>
                         <label className="text-xs text-on-surface-variant font-medium mb-1 block">Local Weather (Mock Sensory)</label>
-                        <select value={weather} onChange={e => setWeather(e.target.value)} className="w-full bg-surface-container-highest border border-[rgba(69,72,79,0.2)] rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary">
+                        <select value={weather} onChange={e => setWeather(e.target.value)} className="w-full bg-[#1c2028] border border-[rgba(255,255,255,0.1)] rounded-lg px-3 py-2 text-sm text-on-surface focus:outline-none focus:border-primary">
                           <option value="clear">Clear</option>
                           <option value="rain">Heavy Rain</option>
                           <option value="storm">Severe Storm</option>
@@ -139,7 +146,7 @@ const Tracking = () => {
                         </label>
                       </div>
                     </div>
-                    <button type="submit" className="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-semibold rounded-lg py-3 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] transition-transform">
+                    <button disabled={isSubmitting} type="submit" className="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-semibold rounded-lg py-3 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-50 disabled:pointer-events-none">
                       <span className="material-symbols-outlined font-bold">memory</span>
                       Broadcast to Network
                     </button>
@@ -154,7 +161,7 @@ const Tracking = () => {
                       <span className="material-symbols-outlined" style={{fontVariationSettings: "'FILL' 1"}}>{cp.verified ? 'check_circle' : 'gpp_bad'}</span>
                     </div>
 
-                    <div className={`bg-surface-container-high rounded-xl p-5 border shadow-sm ${cp.verified ? 'border-[rgba(69,72,79,0.15)] hover:border-primary/40' : 'border-tertiary/40 shadow-[0_0_15px_rgba(255,113,98,0.1)]'}`}>
+                    <div className={`glass-subtle rounded-xl p-5 shadow-sm ${cp.verified ? 'hover:border-primary/40' : 'border-tertiary/40 shadow-[0_0_15px_rgba(255,113,98,0.1)]'}`}>
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-2">
                           <span className="font-headline font-bold text-on-surface text-lg">{cp.location}</span>
@@ -162,7 +169,10 @@ const Tracking = () => {
                             {cp.status}
                           </span>
                         </div>
-                        <span className="text-xs text-on-surface-variant font-mono">{new Date(cp.timestamp).toLocaleString()}</span>
+                        <div className="text-right">
+                          <div className="text-xs text-on-surface-variant font-mono">{new Date(cp.timestamp).toLocaleString()}</div>
+                          <div className="text-[10px] text-primary/80 mt-1 uppercase tracking-widest hidden md:block">Logged by Node {cp.createdBy ? cp.createdBy.substring(0,4) : 'ANON'}</div>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4 mt-4">
@@ -170,9 +180,9 @@ const Tracking = () => {
                           <div className="text-xs font-medium text-on-surface-variant flex items-center gap-1">
                             <span className="material-symbols-outlined text-[14px]">link</span> Blockchain Verification
                           </div>
-                          <div className="bg-surface-container-lowest p-2 rounded border border-[rgba(69,72,79,0.2)] font-mono text-[10px] break-all leading-tight">
-                            <div className="text-primary opacity-80 mb-1">Tx: {cp.txHash}</div>
-                            <div className="text-on-surface-variant opacity-60">ZKP: {cp.verificationHash}</div>
+                          <div className="bg-[#101217]/50 p-2 rounded border border-[rgba(255,255,255,0.05)] font-mono text-[10px] break-all leading-tight">
+                            <div className="text-primary opacity-80 mb-1">Tx: {cp.txHash || 'Pending validation'}</div>
+                            <div className="text-on-surface-variant opacity-60">ZKP: {cp.verificationHash || 'Pending evidence'}</div>
                           </div>
                         </div>
                         
@@ -180,10 +190,13 @@ const Tracking = () => {
                           <div className="text-xs font-medium text-on-surface-variant flex items-center gap-1">
                             <span className="material-symbols-outlined text-[14px]">psychology</span> AI Telemetry Analysis
                           </div>
-                          {cp.aiInsight ? (
-                            <div className="bg-[#1c2028] p-2 rounded border border-[rgba(69,72,79,0.2)]">
-                              <div className={`text-xs font-semibold mb-1 ${cp.verified ? 'text-primary' : 'text-tertiary'}`}>{cp.aiInsight.primary}</div>
-                              <div className="text-[10px] text-on-surface-variant leading-relaxed">{cp.aiInsight.explanationText}</div>
+                          {cp.aiAnalysis ? (
+                            <div className="bg-[#101217]/50 p-2 rounded border border-[rgba(255,255,255,0.05)] relative">
+                              <div className={`text-xs font-semibold mb-1 pr-6 ${cp.verified || cp.aiAnalysis.riskScore < 50 ? 'text-primary' : 'text-tertiary'}`}>{cp.aiAnalysis.primary}</div>
+                              <div className="text-[10px] text-on-surface-variant leading-relaxed">{cp.aiAnalysis.explanationText}</div>
+                              {cp.aiAnalysis.analysisVersion && (
+                                <div className="absolute top-2 right-2 text-[8px] font-mono text-on-surface-variant/50">{cp.aiAnalysis.analysisVersion}</div>
+                              )}
                             </div>
                           ) : (
                             <div className="text-xs text-on-surface-variant italic">Pending consensus...</div>

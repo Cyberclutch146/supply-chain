@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ShipmentProvider } from './context/ShipmentContext';
+import { ShipmentProvider, useShipments } from './context/ShipmentContext';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -16,10 +16,11 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 function AppRouter() {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
+  const { isLoadingShipments } = useShipments();
   const isAuthenticated = !!currentUser;
 
-  if (loading) return <LoadingScreen />;
+  if (authLoading || (isAuthenticated && isLoadingShipments)) return <LoadingScreen />;
 
   return (
     <Router>
