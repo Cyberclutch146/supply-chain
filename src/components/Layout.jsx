@@ -56,24 +56,24 @@ const Layout = ({ children }) => {
             <Globe size={20} />
             <span className="font-semibold">Global Overview</span>
           </Link>
-          <a className="flex items-center gap-4 px-4 py-3 rounded-lg text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6] transition-all duration-300 group cursor-pointer">
+          <Link to="/risk" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300 group cursor-pointer ${location.pathname === '/risk' ? 'text-[#50ffb0] bg-[#50ffb0]/10 border-r-2 border-[#50ffb0]' : 'text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6]'}`}>
             <AlertTriangle size={20} />
             <span className="font-medium">Predictive Risk</span>
-          </a>
-          <a className="flex items-center gap-4 px-4 py-3 rounded-lg text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6] transition-all duration-300 group cursor-pointer">
+          </Link>
+          <Link to="/contracts" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300 group cursor-pointer ${location.pathname === '/contracts' ? 'text-[#50ffb0] bg-[#50ffb0]/10 border-r-2 border-[#50ffb0]' : 'text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6]'}`}>
             <FileSignature size={20} />
             <span className="font-medium">Smart Contracts</span>
-          </a>
-          <a className="flex items-center gap-4 px-4 py-3 rounded-lg text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6] transition-all duration-300 group cursor-pointer">
+          </Link>
+          <Link to="/nodes" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300 group cursor-pointer ${location.pathname === '/nodes' ? 'text-[#50ffb0] bg-[#50ffb0]/10 border-r-2 border-[#50ffb0]' : 'text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6]'}`}>
             <Network size={20} />
             <span className="font-medium">Node Status</span>
-          </a>
+          </Link>
         </div>
         <div className="mt-auto pt-8 font-['Space_Grotesk'] text-sm">
-          <a className="flex items-center gap-4 px-4 py-3 rounded-lg text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6] transition-all duration-300 group cursor-pointer">
+          <Link to="/settings" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300 group cursor-pointer ${location.pathname === '/settings' ? 'text-[#50ffb0] bg-[#50ffb0]/10 border-r-2 border-[#50ffb0]' : 'text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6]'}`}>
             <Settings size={20} />
             <span className="font-medium">Settings</span>
-          </a>
+          </Link>
           <div className="mt-6 px-4 py-4 rounded-xl bg-surface-container-lowest border border-outline-variant/10 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full border border-primary/20 bg-primary/20 flex items-center justify-center text-primary font-bold">
                A
@@ -97,14 +97,14 @@ const Layout = ({ children }) => {
           <LayoutDashboard size={24} className="mb-1" />
           <span>Fleet</span>
         </Link>
-        <button className="flex flex-col items-center justify-center text-[#ecedf6]/60 hover:bg-[#161a21] transition-all active:scale-95 duration-200 py-2 px-3 rounded-lg">
+        <Link to="/risk" className={`flex flex-col items-center justify-center rounded-lg px-4 py-1 transition-all active:scale-95 duration-200 ${location.pathname === '/risk' ? 'text-[#50ffb0] bg-[#1c2028]' : 'text-[#ecedf6]/60 hover:bg-[#161a21]'}`}>
           <AlertTriangle size={24} className="mb-1" />
           <span>Intelligence</span>
-        </button>
-        <button className="flex flex-col items-center justify-center text-[#ecedf6]/60 hover:bg-[#161a21] transition-all active:scale-95 duration-200 py-2 px-3 rounded-lg">
+        </Link>
+        <Link to="/nodes" className={`flex flex-col items-center justify-center rounded-lg px-4 py-1 transition-all active:scale-95 duration-200 ${location.pathname === '/nodes' ? 'text-[#50ffb0] bg-[#1c2028]' : 'text-[#ecedf6]/60 hover:bg-[#161a21]'}`}>
           <Network size={24} className="mb-1" />
           <span>Ledger</span>
-        </button>
+        </Link>
       </nav>
     </div>
   );
