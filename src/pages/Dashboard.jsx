@@ -154,15 +154,41 @@ const Dashboard = () => {
             </div>
           </div>
           
-          <div className="glass-card rounded-xl p-1 h-64 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-surface-container-lowest opacity-50" style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(80, 255, 176, 0.1) 0%, transparent 60%)' }}></div>
-            <div className="absolute bottom-4 left-4">
-               <p className="text-xs font-mono crypto-mono text-[#50ffb0] font-bold shadow-black drop-shadow-md">LIVE VIEW</p>
-               <p className="text-sm font-semibold text-white drop-shadow-md">Global Fleet Deployment</p>
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 text-[#50ffb0]">
-               <Globe size={120} />
-            </div>
+          {/* Live Activity Feed */}
+          <div className="glass-card rounded-xl p-5 relative overflow-hidden flex-1 border border-outline-variant/10">
+             <div className="flex items-center justify-between mb-4">
+               <h3 className="text-sm font-headline font-semibold text-on-surface uppercase tracking-wider">Live Ledger Activity</h3>
+               <span className="w-1.5 h-1.5 rounded-full bg-[#50ffb0] animate-ping"></span>
+             </div>
+             <div className="flex flex-col gap-3">
+               {(() => {
+                 const allCheckpoints = shipments.flatMap(s => 
+                   s.checkpoints.map(c => ({ ...c, shipmentId: s.id }))
+                 ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+
+                 if (allCheckpoints.length === 0) {
+                   return <div className="text-xs text-on-surface-variant italic">Waiting for ledger sync...</div>;
+                 }
+
+                 return allCheckpoints.map((cp, idx) => (
+                   <div key={idx} className="flex gap-3 items-start border-l-2 border-[#50ffb0]/30 pl-3 pb-2">
+                     <div className="bg-[#0b0e14] border border-outline-variant/10 p-2 rounded w-full flex flex-col gap-1 shadow-sm hover:border-[#50ffb0]/20 transition-colors">
+                        <div className="flex justify-between items-center w-full">
+                          <span className="text-xs font-bold text-on-surface truncate">{cp.shipmentId}</span>
+                          <span className="text-[10px] text-on-surface-variant">{new Date(cp.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <span className="text-[10px] font-mono crypto-mono text-[#50ffb0]/80 truncate">
+                          Tx: {cp.txHash || '0x...'}
+                        </span>
+                        <span className="text-[10px] text-on-surface-variant truncate">
+                          Status: {cp.location} [{cp.status}]
+                        </span>
+                     </div>
+                   </div>
+                 ));
+               })()}
+             </div>
+             <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#10131a] to-transparent pointer-events-none"></div>
           </div>
         </div>
       </div>

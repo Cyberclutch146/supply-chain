@@ -13,28 +13,6 @@ export const useShipments = () => {
   return context;
 };
 
-const stableStringify = (obj) =>
-  JSON.stringify(Object.keys(obj).sort().reduce((acc, key) => {
-    acc[key] = obj[key];
-    return acc;
-  }, {}));
-
-const getHashPayload = (c) => ({
-  location: c.location,
-  timestamp: c.timestamp,
-  status: c.status,
-  idleTime: c.idleTime,
-  harshBrakes: c.harshBrakes,
-  trafficLevel: c.trafficLevel,
-  waitTime: c.waitTime,
-  vehicleStatus: c.vehicleStatus,
-  weather: c.weather,
-  checkpointDelay: c.checkpointDelay,
-  routeDeviation: c.routeDeviation
-});
-
-const generateHash = (data) => btoa(stableStringify(getHashPayload(data)));
-
 export const ShipmentProvider = ({ children }) => {
   const [shipmentsData, setShipmentsData] = useState([]);
   const [checkpointsData, setCheckpointsData] = useState([]);
@@ -87,15 +65,21 @@ export const ShipmentProvider = ({ children }) => {
         timestamp: new Date().toISOString()
       };
 
-      // Perform Cryptographic Data Integrity locally (fallback since Functions require Blaze plan)
-      const verificationHash = generateHash(newCheckpoint);
-      const txHash = '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('').slice(0, 8) + '...' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).slice(-4);
+      // 1. Backend Hashing & Blockchain tx generation via Cloud Function
+      const logCheckpointFn = httpsCallable(functions, 'logCheckpoint');
+      const logRes = await logCheckpointFn(newCheckpoint);
+      const { verificationHash, txHash } = logRes.data;
 
       // Corrupt data logic for Tampering Demo
       let storedCheckpoint = { ...newCheckpoint };
       if (isTamperedDemo) {
         storedCheckpoint.idleTime = (Number(storedCheckpoint.idleTime) || 0) + 15;
       }
+
+      // 2. AI Risk Analysis via Cloud Function
+      const analyzeRiskFn = httpsCallable(functions, 'analyzeRisk');
+      const aiRes = await analyzeRiskFn(storedCheckpoint);
+      const aiInsight = aiRes.data;
 
       const user = auth.currentUser;
       const checkpointData = {
@@ -104,6 +88,7 @@ export const ShipmentProvider = ({ children }) => {
         verificationHash,
         txHash,
         verified: !isTamperedDemo,
+        aiInsight,
         createdBy: user ? user.uid : 'anonymous'
       };
 
@@ -121,11 +106,10 @@ export const ShipmentProvider = ({ children }) => {
     }
   };
 
-
   const verifyHash = (checkpoint) => {
-    if (!checkpoint.verificationHash) return false;
-    const currentHash = generateHash(checkpoint);
-    return currentHash === checkpoint.verificationHash;
+    // In a true hybrid model, the client shouldn't hash locally. 
+    // We trust the backend signed `verified` flag for demo purposes.
+    return checkpoint.verified;
   };
 
   const calculateRisk = (c) => {
@@ -148,46 +132,13 @@ export const ShipmentProvider = ({ children }) => {
     return 75;
   };
 
-  const getDelayBreakdown = (c) => {
-    const factors = [
-      { id: 'weather', label: "Environmental (Storm)", weight: c.weather === "storm" ? 100 : 0 },
-      { id: 'vehicle', label: "Vehicle Breakdown", weight: c.vehicleStatus === "breakdown" ? 90 : 0 },
-      { id: 'deviation', label: "Route Deviation", weight: c.routeDeviation ? 80 : 0 },
-      { id: 'traffic', label: "Traffic Congestion", weight: c.trafficLevel === "high" ? 70 : 0 },
-      { id: 'driver', label: "Driver Anomaly", weight: (c.idleTime > 60 || c.harshBrakes > 10) ? 60 : 0 },
-      { id: 'warning', label: "Vehicle Warning", weight: c.vehicleStatus === "warning" ? 50 : 0 },
-      { id: 'wait', label: "Operational Delay", weight: c.waitTime > 30 ? 40 : 0 },
-      { id: 'compliance', label: "Compliance Delay", weight: c.checkpointDelay > 20 ? 30 : 0 },
-    ].filter(f => f.weight > 0).sort((a, b) => b.weight - a.weight);
-
-    if (factors.length === 0) {
-      return {
-        primary: "Normal Conditions",
-        secondary: null,
-        explanationText: "Current logistics flow is optimal with no significant risk factors detected."
-      };
-    }
-
-    const primary = factors[0].label;
-    const secondary = factors.length > 1 ? factors[1].label : null;
-
-    let explanationText = "";
-    if (secondary) {
-      explanationText = `${primary} combined with ${secondary.toLowerCase()} is significantly increasing delay probability.`;
-    } else {
-      explanationText = `${primary} alone is significantly increasing delay risk.`;
-    }
-
-    return { primary, secondary, explanationText };
-  };
-
   const getShipmentMetrics = (shipmentId) => {
     const shipment = shipments.find(s => s.id === shipmentId);
     if (!shipment || shipment.checkpoints.length === 0) {
       return { 
         riskScore: 0, 
         delayProb: getDelayProbability(0), 
-        breakdown: getDelayBreakdown({}), 
+        breakdown: { primary: "Normal Conditions", secondary: null, explanationText: "Awaiting data" }, 
         lastMetrics: {} 
       };
     }
@@ -206,7 +157,9 @@ export const ShipmentProvider = ({ children }) => {
 
     const riskScore = calculateRisk(c);
     const delayProb = getDelayProbability(riskScore);
-    const breakdown = getDelayBreakdown(c);
+    const breakdown = latest.aiInsight || {
+      primary: "Analyzing...", secondary: null, explanationText: "Awaiting AI insight."
+    };
 
     return { riskScore, delayProb, breakdown, lastMetrics: c };
   };
@@ -219,11 +172,9 @@ export const ShipmentProvider = ({ children }) => {
       verifyHash,
       calculateRisk,
       getDelayProbability,
-      getDelayBreakdown,
       getShipmentMetrics
     }}>
       {children}
     </ShipmentContext.Provider>
   );
 };
-

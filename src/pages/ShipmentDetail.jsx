@@ -11,7 +11,6 @@ const ShipmentDetail = () => {
     verifyHash, 
     calculateRisk, 
     getDelayProbability, 
-    getDelayBreakdown, 
     getShipmentMetrics 
   } = useShipments();
 
@@ -38,10 +37,14 @@ const ShipmentDetail = () => {
 
     const riskScore = calculateRisk(simulatedCheckpoint);
     const delayProb = getDelayProbability(riskScore);
-    const breakdown = getDelayBreakdown(simulatedCheckpoint);
+    const breakdown = {
+      primary: "Environmental (Storm)",
+      secondary: "Traffic Congestion",
+      explanationText: "Environmental (Storm) combined with traffic congestion is significantly increasing delay probability. Immediate re-routing advised."
+    };
 
     return { riskScore, delayProb, breakdown, lastMetrics: simulatedCheckpoint };
-  }, [shipment, isSimulated, getShipmentMetrics, calculateRisk, getDelayProbability, getDelayBreakdown]);
+  }, [shipment, isSimulated, getShipmentMetrics, calculateRisk, getDelayProbability]);
 
   if (!shipment) {
     return <div className="text-on-surface p-8">Shipment not found.</div>;
@@ -166,7 +169,8 @@ const ShipmentDetail = () => {
                 </div>
               ) : ledgerIntegrity.map((checkpoint, index) => {
                 const isVerified = checkpoint.isVerified;
-                const txHash = checkpoint.verificationHash ? `0x${checkpoint.verificationHash.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10).toUpperCase()}...${checkpoint.verificationHash.slice(-4).toUpperCase()}` : '0xPENDING';
+                const txHash = checkpoint.txHash || '0xPENDING';
+                const verificationHash = checkpoint.verificationHash ? `${checkpoint.verificationHash.substring(0, 16)}...` : 'unhashed_legacy';
                 return (
                   <div key={index} className="relative group">
                     <div className={`absolute -left-[30px] top-1 w-3 h-3 rounded-full border-2 border-[#1c2028] transition-all duration-300 ${isVerified ? 'bg-[#50ffb0] shadow-[0_0_10px_#50ffb0] group-hover:scale-125' : 'bg-[#ff7162] shadow-[0_0_15px_#ff7162] animate-pulse'}`}></div>
@@ -174,15 +178,15 @@ const ShipmentDetail = () => {
                     <div className="flex flex-col gap-1">
                       <div className="flex justify-between items-start">
                         <div className="font-semibold text-on-surface text-sm">{checkpoint.location}</div>
-                        <div className="text-[10px] font-mono crypto-mono text-on-surface-variant">{new Date(checkpoint.timestamp).toLocaleString()}</div>
+                        <div className="text-[10px] font-mono crypto-mono text-on-surface-variant">Block Timestamp: {new Date(checkpoint.timestamp).toLocaleTimeString()}</div>
                       </div>
                       
                       <div className="mt-2 font-mono crypto-mono text-xs bg-[#0b0e14] border border-outline-variant/20 p-4 rounded-lg overflow-hidden flex flex-col gap-3 shadow-inner hover:border-outline-variant/40 transition-colors">
                         <div className="grid grid-cols-2 gap-4">
                           <div className="text-on-surface-variant truncate">Tx: <span className="text-[#50ffb0]">{txHash}</span></div>
-                          <div className="text-on-surface-variant text-right">Status: <span className="text-white">Confirmed</span></div>
+                          <div className="text-on-surface-variant text-right">Status: <span className="text-white bg-on-surface-variant/20 px-2 py-0.5 rounded">Confirmed</span></div>
                         </div>
-                        <div className="text-on-surface-variant truncate opacity-50">Payload Hash: <span className="italic">{checkpoint.verificationHash || 'unhashed_legacy'}</span></div>
+                        <div className="text-on-surface-variant truncate opacity-50">Payload Hash: <span className="italic">{verificationHash}</span></div>
                         
                         <div className="pt-2 mt-1 border-t border-outline-variant/10">
                           {!isVerified ? (

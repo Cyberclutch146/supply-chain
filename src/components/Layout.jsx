@@ -33,6 +33,18 @@ const Layout = ({ children }) => {
           <h2 className="text-[#50ffb0] font-black italic text-2xl tracking-tighter mb-1 font-['Space_Grotesk'] cursor-pointer" onClick={() => navigate('/')}>ChainSight</h2>
           <p className="font-['Space_Grotesk'] text-sm text-on-surface-variant font-medium tracking-widest uppercase mb-6">THE SOVEREIGN LEDGER</p>
           
+          <div className="mb-6 p-3 rounded-lg bg-surface-container-low border border-outline-variant/10">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#50ffb0] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#50ffb0]"></span>
+              </span>
+              <span className="text-xs font-mono text-[#50ffb0]">Connected</span>
+            </div>
+            <p className="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider">Network: Polygon Amoy</p>
+            <p className="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider mt-1">Block: #1234567</p>
+          </div>
+
           {isHome && (
              <button onClick={() => navigate('/add-shipment')} className="pulse-btn w-full py-3 rounded-lg flex items-center justify-center gap-2 font-semibold shadow-neon">
                <Plus size={18} /> New Shipment
