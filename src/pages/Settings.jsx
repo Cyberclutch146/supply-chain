@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 const Settings = () => {
-  const [nodeId, setNodeId] = useState(localStorage.getItem('nodeId') || '042');
+  const { currentUser, nodeId: activeNodeId } = useAuth();
+  const [nodeId, setNodeId] = useState(activeNodeId || '042');
   const [threshold, setRiskThreshold] = useState('60');
 
-  const handleSave = (e) => {
+  useEffect(() => {
+    if (activeNodeId) setNodeId(activeNodeId);
+  }, [activeNodeId]);
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    localStorage.setItem('nodeId', nodeId);
-    toast.success('Settings synchronized to node.');
-    // In a real app we might update context or prompt a reload
+    if (!currentUser) return;
+    try {
+      await setDoc(doc(db, 'users', currentUser.uid), {
+        nodeId: nodeId
+      }, { merge: true });
+      toast.success('Settings synchronized to node.');
+    } catch (err) {
+      toast.error('Failed to synchronize settings');
+    }
   };
 
   return (

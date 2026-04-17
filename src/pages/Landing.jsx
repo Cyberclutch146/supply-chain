@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInAnonymously } from 'firebase/auth';
-import { auth } from '../services/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../services/firebase';
 import { toast } from 'react-hot-toast';
+import { BrowserProvider } from 'ethers';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -22,11 +24,33 @@ const Landing = () => {
 
   const handleWalletSelect = async () => {
     try {
-      await signInAnonymously(auth);
+      if (!window.ethereum) {
+        toast.error('MetaMask or Web3 wallet not detected.');
+        return;
+      }
+
+      const provider = new BrowserProvider(window.ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
+      const address = accounts[0];
+
+      // Request a signature to prove ownership
+      const signer = await provider.getSigner();
+      const message = `Sign this message to authenticate with Sovereign Ledger.\nNonce: ${Date.now()}`;
+      await signer.signMessage(message);
+
+      // Authenticate via Firebase
+      const { user } = await signInAnonymously(auth);
+      
+      await setDoc(doc(db, 'users', user.uid), {
+        walletAddress: address,
+        nodeId: `Node-${address.substring(2,6).toUpperCase()}`,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
       navigate('/');
     } catch (error) {
       console.error('Wallet connect failed', error);
-      toast.error('Wallet Connection Failed');
+      toast.error(error.message || 'Signature rejected or wallet failed.');
     }
   };
 

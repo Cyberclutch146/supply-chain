@@ -1,14 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../services/firebase';
 import { signOut } from 'firebase/auth';
+import { useAuth } from '../context/AuthContext';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { walletAddress } = useAuth();
+
+  const truncatedAddress = walletAddress
+    ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`
+    : null;
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem('walletAddress');
+      localStorage.removeItem('nodeId');
       await signOut(auth);
       navigate('/landing');
     } catch (error) {
@@ -22,7 +30,14 @@ const Layout = ({ children }) => {
       <aside className="hidden md:flex flex-col h-full pt-20 pb-8 bg-[#161a21] text-[#50ffb0] font-['Inter'] text-sm w-64 fixed left-0 top-0 space-y-6 z-40">
         <div className="px-6 pb-6">
           <h2 className="font-headline text-on-surface font-bold text-lg">Global Logistics</h2>
-          <p className="text-on-surface-variant text-xs mt-1">Verified Node 042</p>
+          {truncatedAddress ? (
+            <div className="flex items-center gap-2 mt-1.5">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_6px_#50ffb0]"></div>
+              <p className="text-primary text-xs font-mono font-medium tracking-wide">{truncatedAddress}</p>
+            </div>
+          ) : (
+            <p className="text-on-surface-variant text-xs mt-1">No wallet connected</p>
+          )}
         </div>
         <nav className="flex-1 space-y-2">
           <a
