@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ShipmentProvider } from './context/ShipmentContext';
+import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import ShipmentDetail from './pages/ShipmentDetail';
-import AddShipment from './pages/AddShipment';
-import AddCheckpoint from './pages/AddCheckpoint';
 import Landing from './pages/Landing';
-import PredictiveRisk from './pages/PredictiveRisk';
-import SmartContracts from './pages/SmartContracts';
+import Tracking from './pages/Tracking';
+import Contracts from './pages/Contracts';
 import NodeStatus from './pages/NodeStatus';
+import AuditLogs from './pages/AuditLogs';
 import Settings from './pages/Settings';
 import LoadingScreen from './components/LoadingScreen';
-import { Toaster } from 'react-hot-toast';
 import { auth } from './services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
@@ -21,16 +19,11 @@ function App() {
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
       setIsInitializing(false);
     });
-
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
   if (isInitializing) return <LoadingScreen />;
@@ -38,35 +31,22 @@ function App() {
   return (
     <ShipmentProvider>
       <Toaster position="top-right" toastOptions={{
-        style: {
-          background: '#1A202C',
-          color: '#fff',
-          border: '1px solid #2D3748',
-        },
-        success: {
-          iconTheme: {
-            primary: '#50ffb0',
-            secondary: '#1A202C',
-          },
-        },
+        style: { background: '#1c2028', color: '#fff', border: '1px solid rgba(69,72,79,0.3)' },
+        success: { iconTheme: { primary: '#50ffb0', secondary: '#1c2028' } }
       }} />
       <Router>
         <Routes>
-          {/* Public Route */}
           <Route path="/landing" element={!isAuthenticated ? <Landing /> : <Navigate to="/" />} />
           
-          {/* Protected Routes enclosed in Layout */}
           <Route path="/*" element={
             isAuthenticated ? (
               <Layout>
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
-                  <Route path="/shipment/:id" element={<ShipmentDetail />} />
-                  <Route path="/add-shipment" element={<AddShipment />} />
-                  <Route path="/add-checkpoint/:id" element={<AddCheckpoint />} />
-                  <Route path="/risk" element={<PredictiveRisk />} />
-                  <Route path="/contracts" element={<SmartContracts />} />
+                  <Route path="/tracking" element={<Tracking />} />
+                  <Route path="/contracts" element={<Contracts />} />
                   <Route path="/nodes" element={<NodeStatus />} />
+                  <Route path="/audit" element={<AuditLogs />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

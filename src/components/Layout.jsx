@@ -1,112 +1,141 @@
 import React from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Globe, AlertTriangle, FileSignature, Network, Settings, Plus, LayoutDashboard } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { auth } from '../services/firebase';
+import { signOut } from 'firebase/auth';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isHome = location.pathname === '/';
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/landing');
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+  };
 
   return (
-    <div className="dark antialiased min-h-screen flex flex-col md:flex-row bg-[#0b0e14] w-full text-on-surface">
-      {/* Mobile Top Bar */}
-      <header className="md:hidden w-full top-0 sticky z-40 bg-[#10131a] shadow-[0_0_20px_rgba(80,255,176,0.05)] border-b border-outline-variant/10 flex items-center justify-between px-6 py-4 transition-colors">
-        <button className="text-[#50ffb0] hover:text-[#primary] focus:outline-none" onClick={() => navigate('/')}>
-          <LayoutDashboard size={24} />
-        </button>
-        <div className="flex flex-col items-center">
-          <span className="font-['Space_Grotesk'] tracking-tight text-[10px] text-on-surface-variant uppercase">Sovereign Ledger</span>
-          <h1 className="text-xl font-bold text-[#50ffb0] tracking-tighter font-['Space_Grotesk']">ChainSight</h1>
+    <div className="flex h-screen overflow-hidden bg-background">
+      {/* SideNavBar */}
+      <aside className="hidden md:flex flex-col h-full pt-20 pb-8 bg-[#161a21] text-[#50ffb0] font-['Inter'] text-sm w-64 fixed left-0 top-0 space-y-6 z-40">
+        <div className="px-6 pb-6">
+          <h2 className="font-headline text-on-surface font-bold text-lg">Global Logistics</h2>
+          <p className="text-on-surface-variant text-xs mt-1">Verified Node 042</p>
         </div>
-        {isHome ? (
-          <button onClick={() => navigate('/add-shipment')} className="text-[#00482c] pulse-btn p-1.5 rounded-full shadow-neon">
-            <Plus size={20} />
+        <nav className="flex-1 space-y-2">
+          <a
+            onClick={() => navigate('/')}
+            className={`flex items-center gap-3 py-3 px-6 cursor-pointer transition-all ${
+              location.pathname === '/' 
+                ? 'bg-gradient-to-r from-[#50ffb0]/10 to-transparent text-[#50ffb0] border-l-4 border-[#50ffb0]' 
+                : 'text-[#ecedf6]/50 hover:bg-[#1c2028] hover:text-[#50ffb0]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg" style={location.pathname === '/' ? { fontVariationSettings: "'FILL' 1" } : {}}>dashboard</span>
+            <span>Overview</span>
+          </a>
+          <a
+            onClick={() => navigate('/tracking')}
+            className={`flex items-center gap-3 py-3 px-6 cursor-pointer transition-all ${
+              location.pathname === '/tracking' 
+                ? 'bg-gradient-to-r from-[#50ffb0]/10 to-transparent text-[#50ffb0] border-l-4 border-[#50ffb0]' 
+                : 'text-[#ecedf6]/50 hover:bg-[#1c2028] hover:text-[#50ffb0]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg" style={location.pathname === '/tracking' ? { fontVariationSettings: "'FILL' 1" } : {}}>query_stats</span>
+            <span>Live Tracking</span>
+          </a>
+          <a
+            onClick={() => navigate('/contracts')}
+            className={`flex items-center gap-3 py-3 px-6 cursor-pointer transition-all ${
+              location.pathname === '/contracts' 
+                ? 'bg-gradient-to-r from-[#50ffb0]/10 to-transparent text-[#50ffb0] border-l-4 border-[#50ffb0]' 
+                : 'text-[#ecedf6]/50 hover:bg-[#1c2028] hover:text-[#50ffb0]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg" style={location.pathname === '/contracts' ? { fontVariationSettings: "'FILL' 1" } : {}}>history_edu</span>
+            <span>Smart Contracts</span>
+          </a>
+          <a
+            onClick={() => navigate('/nodes')}
+            className={`flex items-center gap-3 py-3 px-6 cursor-pointer transition-all ${
+              location.pathname === '/nodes' 
+                ? 'bg-gradient-to-r from-[#50ffb0]/10 to-transparent text-[#50ffb0] border-l-4 border-[#50ffb0]' 
+                : 'text-[#ecedf6]/50 hover:bg-[#1c2028] hover:text-[#50ffb0]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg" style={location.pathname === '/nodes' ? { fontVariationSettings: "'FILL' 1" } : {}}>hub</span>
+            <span>Node Status</span>
+          </a>
+          <a
+            onClick={() => navigate('/audit')}
+            className={`flex items-center gap-3 py-3 px-6 cursor-pointer transition-all ${
+              location.pathname === '/audit' 
+                ? 'bg-gradient-to-r from-[#50ffb0]/10 to-transparent text-[#50ffb0] border-l-4 border-[#50ffb0]' 
+                : 'text-[#ecedf6]/50 hover:bg-[#1c2028] hover:text-[#50ffb0]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg" style={location.pathname === '/audit' ? { fontVariationSettings: "'FILL' 1" } : {}}>security</span>
+            <span>Audit Logs</span>
+          </a>
+        </nav>
+        <div className="px-6 mb-6">
+          <button onClick={() => navigate('/contracts')} className="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-semibold py-2.5 rounded-lg flex justify-center items-center gap-2 hover:opacity-90 transition-opacity">
+            <span className="material-symbols-outlined text-sm">add</span>
+            Deploy Contract
           </button>
-        ) : (
-          <div className="w-6 h-6" />
-        )}
-      </header>
-
-      {/* Desktop Navigation Drawer */}
-      <nav className="hidden md:flex flex-col py-8 px-4 gap-y-2 h-screen w-72 bg-[#10131a] fixed left-0 top-0 bottom-0 z-40 border-r border-outline-variant/10">
-        <div className="mb-10 px-4">
-          <h2 className="text-[#50ffb0] font-black italic text-2xl tracking-tighter mb-1 font-['Space_Grotesk'] cursor-pointer" onClick={() => navigate('/')}>ChainSight</h2>
-          <p className="font-['Space_Grotesk'] text-sm text-on-surface-variant font-medium tracking-widest uppercase mb-6">THE SOVEREIGN LEDGER</p>
-          
-          <div className="mb-6 p-3 rounded-lg bg-surface-container-low border border-outline-variant/10">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#50ffb0] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#50ffb0]"></span>
-              </span>
-              <span className="text-xs font-mono text-[#50ffb0]">Connected</span>
-            </div>
-            <p className="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider">Network: Polygon Amoy</p>
-            <p className="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider mt-1">Block: #1234567</p>
-          </div>
-
-          {isHome && (
-             <button onClick={() => navigate('/add-shipment')} className="pulse-btn w-full py-3 rounded-lg flex items-center justify-center gap-2 font-semibold shadow-neon">
-               <Plus size={18} /> New Shipment
-             </button>
-          )}
         </div>
-        <div className="flex-1 flex flex-col gap-y-2 font-['Space_Grotesk'] text-sm">
-          <Link to="/" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300 group cursor-pointer ${isHome ? 'text-[#50ffb0] bg-[#50ffb0]/10 border-r-2 border-[#50ffb0]' : 'text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6]'}`}>
-            <Globe size={20} />
-            <span className="font-semibold">Global Overview</span>
-          </Link>
-          <Link to="/risk" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300 group cursor-pointer ${location.pathname === '/risk' ? 'text-[#50ffb0] bg-[#50ffb0]/10 border-r-2 border-[#50ffb0]' : 'text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6]'}`}>
-            <AlertTriangle size={20} />
-            <span className="font-medium">Predictive Risk</span>
-          </Link>
-          <Link to="/contracts" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300 group cursor-pointer ${location.pathname === '/contracts' ? 'text-[#50ffb0] bg-[#50ffb0]/10 border-r-2 border-[#50ffb0]' : 'text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6]'}`}>
-            <FileSignature size={20} />
-            <span className="font-medium">Smart Contracts</span>
-          </Link>
-          <Link to="/nodes" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300 group cursor-pointer ${location.pathname === '/nodes' ? 'text-[#50ffb0] bg-[#50ffb0]/10 border-r-2 border-[#50ffb0]' : 'text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6]'}`}>
-            <Network size={20} />
-            <span className="font-medium">Node Status</span>
-          </Link>
+        <div className="space-y-2 mt-auto">
+          <a
+            onClick={() => navigate('/settings')}
+            className={`flex items-center gap-3 py-3 px-6 cursor-pointer transition-all ${
+              location.pathname === '/settings' 
+                ? 'bg-gradient-to-r from-[#50ffb0]/10 to-transparent text-[#50ffb0] border-l-4 border-[#50ffb0]' 
+                : 'text-[#ecedf6]/50 hover:bg-[#1c2028] hover:text-[#50ffb0]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg" style={location.pathname === '/settings' ? { fontVariationSettings: "'FILL' 1" } : {}}>settings</span>
+            <span>Settings</span>
+          </a>
+          <a
+            onClick={handleLogout}
+            className="flex items-center gap-3 text-[#ecedf6]/50 py-3 px-6 hover:bg-[#1c2028] hover:text-error transition-all cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-lg">logout</span>
+            <span>Sign Out</span>
+          </a>
         </div>
-        <div className="mt-auto pt-8 font-['Space_Grotesk'] text-sm">
-          <Link to="/settings" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-300 group cursor-pointer ${location.pathname === '/settings' ? 'text-[#50ffb0] bg-[#50ffb0]/10 border-r-2 border-[#50ffb0]' : 'text-[#ecedf6]/70 hover:bg-[#1c2028] hover:text-[#ecedf6]'}`}>
-            <Settings size={20} />
-            <span className="font-medium">Settings</span>
-          </Link>
-          <div className="mt-6 px-4 py-4 rounded-xl bg-surface-container-lowest border border-outline-variant/10 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full border border-primary/20 bg-primary/20 flex items-center justify-center text-primary font-bold">
-               A
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-on-surface">Admin.0x8F</p>
-              <p className="text-xs font-mono crypto-mono text-[#50ffb0]">Conn: Secure</p>
-            </div>
-          </div>
-        </div>
-      </nav>
+      </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ml-72 flex flex-col min-h-screen pb-24 md:pb-8 w-full">
+      <main className="flex-1 ml-64 overflow-y-auto overflow-x-hidden relative scroll-smooth bg-background">
         {children}
       </main>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 w-full z-50 border-t border-[#45484f]/15 bg-[#0b0e14]/80 backdrop-blur-xl shadow-[0_-10px_40px_rgba(80,255,176,0.08)] flex justify-around items-center h-20 px-4 pb-safe font-['Inter'] text-[10px] uppercase font-bold tracking-widest">
-        <Link to="/" className={`flex flex-col items-center justify-center rounded-lg px-4 py-1 transition-all active:scale-95 duration-200 ${isHome ? 'text-[#50ffb0] bg-[#1c2028]' : 'text-[#ecedf6]/60 hover:bg-[#161a21]'}`}>
-          <LayoutDashboard size={24} className="mb-1" />
-          <span>Fleet</span>
-        </Link>
-        <Link to="/risk" className={`flex flex-col items-center justify-center rounded-lg px-4 py-1 transition-all active:scale-95 duration-200 ${location.pathname === '/risk' ? 'text-[#50ffb0] bg-[#1c2028]' : 'text-[#ecedf6]/60 hover:bg-[#161a21]'}`}>
-          <AlertTriangle size={24} className="mb-1" />
-          <span>Intelligence</span>
-        </Link>
-        <Link to="/nodes" className={`flex flex-col items-center justify-center rounded-lg px-4 py-1 transition-all active:scale-95 duration-200 ${location.pathname === '/nodes' ? 'text-[#50ffb0] bg-[#1c2028]' : 'text-[#ecedf6]/60 hover:bg-[#161a21]'}`}>
-          <Network size={24} className="mb-1" />
-          <span>Ledger</span>
-        </Link>
-      </nav>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(69, 72, 79, 0.5);
+            border-radius: 4px;
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 113, 98, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 113, 98, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 113, 98, 0); }
+        }
+      `}</style>
     </div>
   );
 };
+
 export default Layout;

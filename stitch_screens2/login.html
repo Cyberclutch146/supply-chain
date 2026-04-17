@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChainSight - Authentication</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#22262f",
+                        "tertiary-container": "#f9362c",
+                        "on-primary-fixed": "#00492d",
+                        "on-secondary": "#475269",
+                        "primary-dim": "#3bf0a3",
+                        "on-secondary-fixed": "#353f56",
+                        "secondary-dim": "#c9d4f0",
+                        "inverse-surface": "#f9f9ff",
+                        "on-primary-fixed-variant": "#006943",
+                        "primary-fixed-dim": "#3bf0a3",
+                        "on-secondary-container": "#c5d0ec",
+                        "on-primary": "#005e3b",
+                        "outline": "#73757d",
+                        "inverse-on-surface": "#52555c",
+                        "surface-tint": "#50ffb0",
+                        "on-surface-variant": "#a9abb3",
+                        "tertiary-fixed": "#ff9385",
+                        "outline-variant": "#45484f",
+                        "secondary": "#d7e2ff",
+                        "error": "#ff716c",
+                        "on-background": "#ecedf6",
+                        "primary-container": "#17df93",
+                        "error-dim": "#d7383b",
+                        "surface-container-low": "#10131a",
+                        "on-tertiary-container": "#000000",
+                        "error-container": "#9f0519",
+                        "surface-bright": "#282c36",
+                        "on-surface": "#ecedf6",
+                        "tertiary": "#ff7162",
+                        "surface-container": "#161a21",
+                        "secondary-container": "#3c475d",
+                        "on-primary-container": "#00482c",
+                        "surface-container-highest": "#22262f",
+                        "surface-container-high": "#1c2028",
+                        "primary": "#50ffb0",
+                        "background": "#0b0e14",
+                        "tertiary-fixed-dim": "#ff7c6c",
+                        "surface-container-lowest": "#000000",
+                        "on-error": "#490006",
+                        "surface-dim": "#0b0e14",
+                        "secondary-fixed": "#d7e2ff",
+                        "on-error-container": "#ffa8a3",
+                        "on-secondary-fixed-variant": "#515c73",
+                        "on-tertiary-fixed-variant": "#7a0004",
+                        "primary-fixed": "#50ffb0",
+                        "tertiary-dim": "#e2241f",
+                        "on-tertiary-fixed": "#3a0001",
+                        "on-tertiary": "#4a0001",
+                        "surface": "#0b0e14",
+                        "inverse-primary": "#006d45",
+                        "secondary-fixed-dim": "#c9d4f0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Space Grotesk", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen flex items-center justify-center relative overflow-hidden">
+<!-- Ambient Background / Depth Layers -->
+<div class="absolute inset-0 z-0 bg-surface-container-low/50 pointer-events-none"></div>
+<!-- Abstract Logistics Network Graphic (CSS rendered) -->
+<div class="absolute inset-0 z-0 pointer-events-none opacity-20">
+<div class="absolute top-[10%] left-[15%] w-px h-64 bg-gradient-to-b from-primary/0 via-primary to-primary/0 transform rotate-45"></div>
+<div class="absolute top-[40%] right-[20%] w-px h-96 bg-gradient-to-b from-secondary-container/0 via-secondary-container to-secondary-container/0 transform -rotate-12"></div>
+<div class="absolute bottom-[20%] left-[30%] w-px h-48 bg-gradient-to-b from-outline-variant/0 via-outline-variant to-outline-variant/0 transform rotate-90"></div>
+</div>
+<!-- Glowing Nodes -->
+<div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-secondary-container/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+<!-- Main Authentication Container -->
+<main class="relative z-10 w-full max-w-[420px] px-6">
+<!-- The "Smart Contract" Glass Card -->
+<div class="bg-surface-container-high/80 backdrop-blur-xl border border-outline-variant/15 rounded-xl shadow-[0_0_40px_rgba(80,255,176,0.06)] p-8 md:p-10 flex flex-col gap-8 relative overflow-hidden group">
+<!-- Subtle Hover Glow Effect on Card Border -->
+<div class="absolute inset-0 rounded-xl border border-primary/0 group-hover:border-primary/20 transition-colors duration-700 pointer-events-none shadow-[inset_0_0_20px_rgba(80,255,176,0)] group-hover:shadow-[inset_0_0_20px_rgba(80,255,176,0.05)]"></div>
+<!-- Header -->
+<div class="flex flex-col items-center text-center gap-3">
+<div class="w-14 h-14 rounded-xl bg-surface-container-lowest border border-outline-variant/20 flex items-center justify-center mb-1 shadow-[0_0_20px_rgba(80,255,176,0.05)] relative">
+<!-- Subtle Cryptographic Watermark inside icon box -->
+<div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none text-primary font-mono text-[8px] overflow-hidden leading-none break-all p-1">
+                        0x7A2F...9C1B 0x3E8D...4F2A
+                    </div>
+<span class="material-symbols-outlined text-primary text-[28px]" style="font-variation-settings: 'FILL' 1;">hub</span>
+</div>
+<h1 class="font-headline text-3xl font-bold tracking-tighter text-on-background">ChainSight</h1>
+<p class="text-on-surface-variant font-label text-sm tracking-wide">Enterprise Node Authentication</p>
+</div>
+<!-- Authentication Form -->
+<form class="flex flex-col gap-6 relative z-10">
+<!-- Node ID Input -->
+<div class="flex flex-col gap-2">
+<label class="text-[11px] font-semibold tracking-widest text-on-surface-variant" for="node-id">Operator ID / Node Email</label>
+<div class="relative flex items-center group/input">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant/60 text-lg group-focus-within/input:text-primary transition-colors">person</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 focus:border-primary focus:ring-0 text-on-surface text-sm rounded-lg pl-10 pr-4 py-3 transition-all outline-none placeholder:text-on-surface-variant/40 focus:shadow-[0_0_12px_rgba(80,255,176,0.15)]" id="node-id" placeholder="Enter credential sequence" type="text"/>
+</div>
+</div>
+<!-- Cryptographic Key Input -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="text-[11px] font-semibold tracking-widest text-on-surface-variant" for="auth-key">Cryptographic Key</label>
+<a class="text-[11px] font-medium text-primary hover:text-primary-dim transition-colors tracking-wide" href="#">Recover Access</a>
+</div>
+<div class="relative flex items-center group/input">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant/60 text-lg group-focus-within/input:text-primary transition-colors">key</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 focus:border-primary focus:ring-0 text-on-surface text-sm rounded-lg pl-10 pr-10 py-3 transition-all outline-none placeholder:text-on-surface-variant/40 focus:shadow-[0_0_12px_rgba(80,255,176,0.15)] font-mono tracking-widest" id="auth-key" placeholder="••••••••••••" type="password"/>
+<button class="absolute right-3 text-on-surface-variant/60 hover:text-on-surface transition-colors flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-lg">visibility_off</span>
+</button>
+</div>
+</div>
+<!-- Primary Action -->
+<button class="mt-2 w-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-headline font-bold text-[15px] tracking-wide py-3.5 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(80,255,176,0.15)] active:scale-[0.98]" type="button">
+<span>Initialize Session</span>
+<span class="material-symbols-outlined text-[20px] font-bold">arrow_forward</span>
+</button>
+</form>
+<!-- Security Footer -->
+<div class="mt-2 pt-6 border-t border-outline-variant/15 flex flex-col items-center justify-center gap-3 relative z-10">
+<div class="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20">
+<span class="material-symbols-outlined text-[14px] text-primary" style="font-variation-settings: 'FILL' 1;">security</span>
+<span class="text-primary text-[10px] font-semibold tracking-wider uppercase">Secured by Sovereign Ledger</span>
+</div>
+<p class="text-[10px] text-on-surface-variant/50 font-mono text-center">
+                    Session ID: <span class="text-on-surface-variant/80">0x8F...E2A1</span>
+</p>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,198 +1,235 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
 import { useShipments } from '../context/ShipmentContext';
-import { AlertTriangle, CheckCircle, BrainCircuit, Globe } from 'lucide-react';
 
 const Dashboard = () => {
   const { shipments, getShipmentMetrics } = useShipments();
+  const [searchQuery, setSearchQuery] = useState('');
 
+  const activeNodes = useMemo(() => {
+    // Determine unique createdBy instances, or base 1200 + checkpoints count.
+    const cpCount = shipments.reduce((acc, s) => acc + (s.checkpoints?.length || 0), 0);
+    return 1200 + cpCount;
+  }, [shipments]);
+
+  const flaggedRisks = useMemo(() => {
+    return shipments.filter(s => s.status === 'Delayed' || s.status === 'Tampered').length;
+  }, [shipments]);
+
+  const totalSupplyValue = useMemo(() => {
+    return (4.2 + (shipments.length * 0.05)).toFixed(2) + 'B';
+  }, [shipments]);
+
+  const filteredShipments = useMemo(() => {
+    if (!searchQuery) return shipments;
+    return shipments.filter(s => 
+      s.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.item.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [shipments, searchQuery]);
+
+  const highRiskInsights = useMemo(() => {
+    return shipments
+      .map(s => {
+        const metrics = getShipmentMetrics(s.id);
+        return { shipment: s, metrics };
+      })
+      .filter(entry => entry.metrics.riskScore > 30) // Only show items w/ risk
+      .slice(0, 5);
+  }, [shipments, getShipmentMetrics]);
   return (
-    <div className="px-4 md:px-8 py-6 w-full flex flex-col gap-y-8">
-      {/* Top Header */}
-      <header className="hidden md:flex items-center justify-between pb-2">
+    <div className="p-8">
+      {/* Top App Bar */}
+      <header className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-3xl font-headline font-bold text-on-surface tracking-tight">Fleet Intelligence</h2>
-          <p className="text-sm text-on-surface-variant flex items-center gap-2 mt-1 font-mono crypto-mono">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-            Live Sync • Node {Math.floor(Math.random() * 100)}.A4
-          </p>
+          <h1 className="font-headline text-3xl font-bold text-on-surface">Fleet Ledger Overview</h1>
+          <p className="text-on-surface-variant text-sm mt-1">Real-time cryptographic verification of global supply chain nodes.</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+            <input 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-surface-container-lowest border-none rounded-lg pl-9 pr-4 py-2 text-sm text-on-surface placeholder-on-surface-variant w-64 focus:ring-1 focus:ring-primary focus:outline-none border border-[rgba(69,72,79,0.15)]" 
+              placeholder="Search Tx Hash or Node..." 
+              type="text" 
+            />
+          </div>
+          <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center border border-[rgba(69,72,79,0.15)] text-primary cursor-pointer hover:bg-surface-bright transition-colors">
+            <span className="material-symbols-outlined text-xl">notifications</span>
+          </div>
+          <div className="w-10 h-10 rounded-full overflow-hidden border border-[rgba(69,72,79,0.15)] cursor-pointer">
+            <img 
+              alt="User Avatar" 
+              className="w-full h-full object-cover" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6Yiv0nL9_bahwMRzUQhYZu___bkaUug7iRiktgoze1wBEFnK7bf8u_-NTjtf49b8a_j-8sYw8kLLcr7WdHnoMqmdQP3v059e2EJDL_V611W-iBDWVwp5qKgBA4zPW4rFLYYaRiLsQ1AWOu1aNs-fxly0GQC76oBY1LcJdKEWKhLACtvtpmywgUUbHvOhnhAJsx_sTMxhXX899Tdtjzgi-lLtnoOIohml2OT7bi_9XayzkfDZFMiBn7hBFQqvkgkLoSpc7-50Xysk" 
+            />
+          </div>
         </div>
       </header>
 
-      {/* Global Stats */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-card rounded-xl p-6 relative overflow-hidden group neon-border-hover transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-            <p className="font-body text-sm font-medium text-on-surface-variant uppercase tracking-wider">Total Value Locked</p>
-          </div>
-          <h3 className="font-headline text-4xl font-bold text-on-surface mb-2">$4.28B</h3>
-          <div className="flex items-center gap-2 text-sm mt-3">
-             <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded font-bold">+2.4%</span>
-             <span className="text-on-surface-variant font-mono text-xs">vs last epoch</span>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-xl p-6 relative overflow-hidden group neon-border-hover transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-            <p className="font-body text-sm font-medium text-on-surface-variant uppercase tracking-wider">Active Smart Contracts</p>
-          </div>
-          <h3 className="font-headline text-4xl font-bold text-on-surface mb-2">1,842</h3>
-          <div className="flex items-center gap-2 text-sm mt-3">
-             <span className="text-primary bg-primary/10 px-1.5 py-0.5 rounded font-bold">99.8%</span>
-             <span className="text-on-surface-variant font-mono text-xs">Verified execution</span>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-xl p-6 relative overflow-hidden group hover:border-[#ff7162]/50 transition-all duration-300">
-          <div className="flex justify-between items-start mb-4">
-             <p className="font-body text-sm font-medium text-on-surface-variant uppercase tracking-wider">Predictive Risk Nodes</p>
-          </div>
-          <h3 className="font-headline text-4xl font-bold text-[#ff7162] mb-2">{shipments.filter(s => getShipmentMetrics(s.id).riskScore > 30).length}</h3>
-          <div className="flex items-center gap-2 text-sm mt-3">
-             <span className="text-[#ff7162] bg-[#ff7162]/10 px-1.5 py-0.5 rounded font-bold">Needs Review</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
-        
-        {/* Left Column: Shipment List */}
-        <div className="lg:col-span-2 flex flex-col gap-y-4">
-           <div className="flex items-center justify-between mb-2">
-             <h3 className="text-xl font-headline font-semibold text-on-surface">Active Fleet Ledger</h3>
-           </div>
-           
-           <div className="flex flex-col gap-4">
-             {shipments.length === 0 ? (
-               <div className="flex flex-col flex-1 items-center justify-center p-12 glass-card rounded-xl border border-outline-variant/30 text-center animate-[fadeIn_1s_ease-out]">
-                 <p className="text-xl font-bold text-on-surface mb-2">No Active Shipments</p>
-                 <p className="text-sm text-on-surface-variant font-mono">Initialize a new contract to begin tracking.</p>
-               </div>
-             ) : shipments.map(shipment => {
-               const metrics = getShipmentMetrics(shipment.id);
-               const isHighRisk = metrics.riskScore >= 61;
-               const isMedRisk = metrics.riskScore >= 31 && !isHighRisk;
-               const primaryCause = metrics.breakdown?.primary;
-
-               return (
-                  <Link 
-                    to={`/shipment/${shipment.id}`} 
-                    key={shipment.id} 
-                    className={`glass-card rounded-xl p-5 relative overflow-hidden transition-all duration-300 group cursor-pointer hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(80,255,176,0.15)] hover:z-10 ${isHighRisk ? 'border-l-4 border-l-[#ff7162]' : isMedRisk ? 'border-l-4 border-l-[#f59e0b]' : 'neon-border-hover'}`}
-                  >
-                    {isHighRisk && <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#ff7162]/5 to-transparent pointer-events-none group-hover:from-[#ff7162]/10 transition-colors"></div>}
-                   
-                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                     <div className="flex items-start gap-4 w-full">
-                       <div className={`${isHighRisk ? 'bg-[#ff7162]/10 text-[#ff7162]' : 'bg-[#50ffb0]/10 text-[#50ffb0]'} p-2 rounded-lg mt-1`}>
-                         {isHighRisk ? <AlertTriangle size={24} /> : <CheckCircle size={24} />}
-                       </div>
-                       
-                       <div className="flex-1">
-                         <div className="flex justify-between items-start w-full mb-1">
-                           <div className="flex items-center gap-2">
-                             <h4 className="font-semibold text-on-surface">{shipment.id}</h4>
-                             <span className={`${isHighRisk ? 'bg-[#ff7162]/20 text-[#ff7162]' : isMedRisk ? 'bg-[#f59e0b]/20 text-[#f59e0b]' : 'bg-[#50ffb0]/20 text-[#50ffb0]'} text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider`}>
-                               {isHighRisk ? 'CRITICAL' : isMedRisk ? 'WARNING' : 'SECURE'}
-                             </span>
-                           </div>
-                           <span className="text-sm font-medium text-on-surface">{metrics.delayProb}% Delay Prob</span>
-                         </div>
-                         
-                         {primaryCause && (
-                           <div className={`mt-2 mb-3 font-mono text-[10px] p-2 rounded border inline-block ${isHighRisk ? 'text-[#ff7162]/80 bg-[#ff7162]/5 border-[#ff7162]/10' : 'text-[#50ffb0]/80 bg-[#50ffb0]/5 border-[#50ffb0]/10'}`}>
-                             AI.Analysis: {primaryCause}
-                           </div>
-                         )}
-                         
-                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
-                           <div>
-                             <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Origin</p>
-                             <p className="text-sm text-on-surface">{shipment.origin}</p>
-                           </div>
-                           <div>
-                             <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Destination</p>
-                             <p className="text-sm text-on-surface">{shipment.destination}</p>
-                           </div>
-                           <div>
-                             <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Status</p>
-                             <p className="text-sm text-on-surface">{shipment.status}</p>
-                           </div>
-                           <div>
-                             <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Risk Score</p>
-                             <p className={`text-sm font-mono ${isHighRisk ? 'text-[#ff7162]' : isMedRisk ? 'text-[#f59e0b]' : 'text-[#50ffb0]'}`}>{metrics.riskScore}</p>
-                           </div>
-                         </div>
-                       </div>
-                     </div>
-                   </div>
-                 </Link>
-               );
-             })}
-           </div>
-        </div>
-
-        {/* Right Column: AI Insight */}
-        <div className="flex flex-col gap-y-6">
-          <div className="glass-card rounded-xl p-6 relative bg-surface-container-lowest/80 border border-outline-variant/10 shadow-[inset_0_0_40px_rgba(0,0,0,0.5)]">
-            <div className="flex items-center justify-between mb-4">
-               <h3 className="text-lg font-headline font-semibold text-on-surface flex items-center gap-2">
-                 <BrainCircuit className="text-[#50ffb0]" size={20} /> Network Intelligence
-               </h3>
-               <span className="w-2 h-2 rounded-full bg-[#50ffb0] animate-ping"></span>
+      {/* Bento Grid Layout */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Macro Stats (Left Col, Span 8) */}
+        <div className="col-span-12 lg:col-span-8 flex flex-col gap-6">
+          {/* Top Row Stats */}
+          <div className="grid grid-cols-3 gap-6">
+            <div className="bg-[#1c2028]/80 backdrop-blur-md p-6 rounded-xl border border-[rgba(69,72,79,0.15)] flex flex-col justify-between shadow-[0_0_40px_rgba(80,255,176,0.08)] relative overflow-hidden group">
+              <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-on-surface-variant text-sm font-medium">Total Supply Chain Value</span>
+                <span className="material-symbols-outlined text-primary text-xl">account_balance_wallet</span>
+              </div>
+              <div className="font-headline text-3xl font-bold text-on-surface tracking-tight">${totalSupplyValue}</div>
+              <div className="text-primary text-xs mt-2 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[10px]">trending_up</span> +2.4% (24h)
+              </div>
             </div>
             
-            <div className="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-mono crypto-mono text-on-surface-variant">Model: GPT-O1-Secure</span>
-                <span className="text-xs text-[#50ffb0] font-medium">99.2% Confidence</span>
+            <div className="bg-[#1c2028]/80 backdrop-blur-md p-6 rounded-xl border border-[rgba(69,72,79,0.15)] flex flex-col justify-between hover:shadow-[inset_0_0_0_1px_#50ffb0] transition-all cursor-pointer">
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-on-surface-variant text-sm font-medium">Active Nodes</span>
+                <span className="material-symbols-outlined text-primary text-xl">share</span>
               </div>
-              <p className="text-sm text-on-surface leading-relaxed">
-                Global supply chain flow is optimal. Continual syncing active on <span className="text-[#50ffb0] font-mono crypto-mono bg-[#50ffb0]/10 px-1 rounded">{shipments.length} Active Ledgers</span>. Keep monitoring.
-              </p>
+              <div className="font-headline text-3xl font-bold text-on-surface tracking-tight">{activeNodes.toLocaleString()}</div>
+              <div className="text-primary text-xs mt-2 flex items-center gap-1">
+                99.8% Uptime
+              </div>
+            </div>
+
+            <div className="bg-[#1c2028]/80 backdrop-blur-md p-6 rounded-xl border border-[rgba(69,72,79,0.15)] flex flex-col justify-between hover:shadow-[inset_0_0_0_1px_#50ffb0] transition-all cursor-pointer">
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-on-surface-variant text-sm font-medium">Flagged Risks</span>
+                <span className="material-symbols-outlined text-tertiary text-xl">warning</span>
+              </div>
+              <div className="font-headline text-3xl font-bold text-tertiary tracking-tight">{flaggedRisks}</div>
+              <div className="text-on-surface-variant text-xs mt-2 flex items-center gap-1">
+                Requires Attention
+              </div>
             </div>
           </div>
-          
-          {/* Live Activity Feed */}
-          <div className="glass-card rounded-xl p-5 relative overflow-hidden flex-1 border border-outline-variant/10">
-             <div className="flex items-center justify-between mb-4">
-               <h3 className="text-sm font-headline font-semibold text-on-surface uppercase tracking-wider">Live Ledger Activity</h3>
-               <span className="w-1.5 h-1.5 rounded-full bg-[#50ffb0] animate-ping"></span>
-             </div>
-             <div className="flex flex-col gap-3">
-               {(() => {
-                 const allCheckpoints = shipments.flatMap(s => 
-                   s.checkpoints.map(c => ({ ...c, shipmentId: s.id }))
-                 ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
 
-                 if (allCheckpoints.length === 0) {
-                   return <div className="text-xs text-on-surface-variant italic">Waiting for ledger sync...</div>;
-                 }
+          {/* Global Network Map */}
+          <div className="bg-[#1c2028]/80 backdrop-blur-md rounded-xl border border-[rgba(69,72,79,0.15)] p-6 flex-1 min-h-[400px] relative overflow-hidden hover:shadow-[inset_0_0_0_1px_#50ffb0] transition-all cursor-pointer">
+            <div className="flex justify-between items-center mb-6 relative z-10">
+              <h3 className="font-headline text-lg font-bold text-on-surface">Global Network Status</h3>
+              <div className="flex gap-3">
+                <span className="flex items-center gap-1 text-xs text-on-surface-variant"><div className="w-2 h-2 rounded-full bg-primary"></div> Verified</span>
+                <span className="flex items-center gap-1 text-xs text-on-surface-variant"><div className="w-2 h-2 rounded-full bg-secondary-container"></div> Pending</span>
+                <span className="flex items-center gap-1 text-xs text-on-surface-variant"><div className="w-2 h-2 rounded-full bg-tertiary"></div> Alert</span>
+              </div>
+            </div>
 
-                 return allCheckpoints.map((cp, idx) => (
-                   <div key={idx} className="flex gap-3 items-start border-l-2 border-[#50ffb0]/30 pl-3 pb-2">
-                     <div className="bg-[#0b0e14] border border-outline-variant/10 p-2 rounded w-full flex flex-col gap-1 shadow-sm hover:border-[#50ffb0]/20 transition-colors">
-                        <div className="flex justify-between items-center w-full">
-                          <span className="text-xs font-bold text-on-surface truncate">{cp.shipmentId}</span>
-                          <span className="text-[10px] text-on-surface-variant">{new Date(cp.timestamp).toLocaleTimeString()}</span>
+            {/* Abstract Map Visualization Placeholder */}
+            <div className="absolute inset-0 top-20 flex items-center justify-center opacity-80 pointer-events-none">
+              <img 
+                alt="World Map Tech" 
+                className="w-full h-full object-cover mix-blend-screen opacity-30" 
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtP-RXhGhEKnpYyUEDUmZlD8U0go5l7mTdSfNxnEtq7Mogua8fEHZ1TyagMGo7WoJAQsCvK8uEmqnDLcntj5bA6ydJZJDhaBe7xqWatEKFYCOtPK8foEiOMMwA4Ydr_SgUWij_WkikTe5TNs8cp7l80KUwUN3o-y9zWyXnHtOZshUw1GasRVvrgi_dDKvltmHseU2G4LnXPK0AQM5xm_UqTQfDLIcvHejVDlQkqvjJ3AG6C8FR8Ycgw88iM-DQygJ9xi6bfUxCDGE" 
+              />
+              
+              {/* Simulated Nodes */}
+              <div className="absolute top-[30%] left-[20%] w-3 h-3 rounded-full bg-primary shadow-[0_0_15px_rgba(80,255,176,0.8)] animate-pulse"></div>
+              <div className="absolute top-[40%] left-[50%] w-3 h-3 rounded-full bg-primary shadow-[0_0_15px_rgba(80,255,176,0.8)] animate-pulse"></div>
+              <div className="absolute top-[60%] left-[80%] w-3 h-3 rounded-full bg-tertiary shadow-[0_0_15px_rgba(255,113,98,0.8)] animate-pulse"></div>
+              <div className="absolute top-[20%] left-[70%] w-2 h-2 rounded-full bg-secondary-container"></div>
+              
+              {/* Connection Lines (SVG) */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M 20 30 Q 35 20 50 40" fill="transparent" stroke="rgba(80,255,176,0.2)" strokeDasharray="4 4" strokeWidth="0.5"></path>
+                <path d="M 50 40 Q 65 60 80 60" fill="transparent" stroke="rgba(255,113,98,0.2)" strokeDasharray="4 4" strokeWidth="0.5"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Col, Span 4 (Predictive Risk & Active Ledger) */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          {/* Predictive Risk Nodes */}
+          <div className="bg-surface-container-low rounded-xl p-6 border border-[rgba(69,72,79,0.15)] flex flex-col h-[250px]">
+            <h3 className="font-headline text-lg font-bold text-on-surface mb-4">Predictive Risk Summary</h3>
+            <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+              {highRiskInsights.length === 0 ? (
+                <div className="text-on-surface-variant text-sm text-center py-8">
+                  No critical anomalies detected in active fleet.
+                </div>
+              ) : (
+                highRiskInsights.map(({ shipment, metrics }, idx) => (
+                  <div key={shipment.id} className={`p-3 rounded-lg flex items-start gap-3 border ${metrics.riskScore > 60 ? 'bg-tertiary/5 border-tertiary/20' : 'bg-surface-container-highest border-[rgba(69,72,79,0.15)]'}`}>
+                    <span className={`material-symbols-outlined mt-0.5 ${metrics.riskScore > 60 ? 'text-tertiary' : 'text-secondary-container'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                      {metrics.riskScore > 60 ? 'warning' : 'info'}
+                    </span>
+                    <div>
+                      <div className="text-sm font-medium text-on-surface">{metrics.breakdown?.primary || 'General Risk Flagged'}</div>
+                      <div className="text-xs text-on-surface-variant font-mono mt-1">Item: {shipment.item}</div>
+                      <div className={`text-xs mt-1 ${metrics.riskScore > 60 ? 'text-tertiary' : 'text-on-surface-variant'}`}>
+                        Probability: {metrics.delayProb}%
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Active Fleet Ledger (Interactive Cards) */}
+          <div className="bg-[#1c2028]/80 backdrop-blur-md rounded-xl border border-[rgba(69,72,79,0.15)] p-6 flex-1 flex flex-col min-h-[350px]">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-headline text-lg font-bold text-on-surface">Active Shipment Ledger</h3>
+              <span className="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-colors">more_horiz</span>
+            </div>
+            
+            <div className="space-y-3 flex-1 overflow-y-auto pr-2 relative before:absolute before:inset-y-0 before:left-[11px] before:w-[1px] before:bg-outline-variant/10">
+              
+              {filteredShipments.length === 0 ? (
+                <div className="text-on-surface-variant text-sm text-center py-8">
+                  No shipments active.
+                </div>
+              ) : (
+                filteredShipments.map((shipment, idx) => {
+                  let statusColor = 'primary';
+                  let statusBg = 'bg-primary/20';
+                  let dotBg = 'bg-primary';
+                  if (shipment.status === 'Delayed' || shipment.status === 'Tampered') {
+                    statusColor = 'tertiary';
+                    statusBg = 'bg-tertiary/20';
+                    dotBg = 'bg-tertiary';
+                  } else if (shipment.status === 'Delivered') {
+                    statusColor = 'secondary-container';
+                    statusBg = 'bg-secondary-container/30';
+                    dotBg = 'bg-secondary-container';
+                  }
+
+                  let latestCheckpoint = shipment.checkpoints?.[0];
+                  
+                  return (
+                    <div key={shipment.id} className="relative pl-8 pb-4 group">
+                      <div className={`absolute left-0 top-1 w-6 h-6 rounded-full ${statusBg} flex items-center justify-center border border-${statusColor} z-10 group-hover:scale-110 transition-transform`}>
+                        <div className={`w-2 h-2 rounded-full ${dotBg}`}></div>
+                      </div>
+                      <div className={`bg-surface-container-high p-4 rounded-lg border border-[rgba(69,72,79,0.15)] hover:shadow-[inset_0_0_0_1px_#50ffb0] transition-all cursor-pointer`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <span className={`text-xs font-mono text-${statusColor} bg-${statusColor}/10 px-2 py-0.5 rounded`}>
+                            {latestCheckpoint ? latestCheckpoint.txHash?.substring(0, 8) + '...' + latestCheckpoint.txHash?.slice(-3) : shipment.id.substring(0,8)}
+                          </span>
+                          <span className={`text-[10px] text-${statusColor} uppercase tracking-wider`}>{shipment.status}</span>
                         </div>
-                        <span className="text-[10px] font-mono crypto-mono text-[#50ffb0]/80 truncate">
-                          Tx: {cp.txHash || '0x...'}
-                        </span>
-                        <span className="text-[10px] text-on-surface-variant truncate">
-                          Status: {cp.location} [{cp.status}]
-                        </span>
-                     </div>
-                   </div>
-                 ));
-               })()}
-             </div>
-             <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#10131a] to-transparent pointer-events-none"></div>
+                        <div className="text-sm font-medium text-on-surface">{shipment.item}</div>
+                        <div className="text-xs text-on-surface-variant mt-1">
+                          {latestCheckpoint ? latestCheckpoint.location : 'Awaiting dispatch'}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
 export default Dashboard;

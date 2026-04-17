@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ChainSight | The Sovereign Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#22262f",
+                        "tertiary-container": "#f9362c",
+                        "on-primary-fixed": "#00492d",
+                        "on-secondary": "#475269",
+                        "primary-dim": "#3bf0a3",
+                        "on-secondary-fixed": "#353f56",
+                        "secondary-dim": "#c9d4f0",
+                        "inverse-surface": "#f9f9ff",
+                        "on-primary-fixed-variant": "#006943",
+                        "primary-fixed-dim": "#3bf0a3",
+                        "on-secondary-container": "#c5d0ec",
+                        "on-primary": "#005e3b",
+                        "outline": "#73757d",
+                        "inverse-on-surface": "#52555c",
+                        "surface-tint": "#50ffb0",
+                        "on-surface-variant": "#a9abb3",
+                        "tertiary-fixed": "#ff9385",
+                        "outline-variant": "#45484f",
+                        "secondary": "#d7e2ff",
+                        "error": "#ff716c",
+                        "on-background": "#ecedf6",
+                        "primary-container": "#17df93",
+                        "error-dim": "#d7383b",
+                        "surface-container-low": "#10131a",
+                        "on-tertiary-container": "#000000",
+                        "error-container": "#9f0519",
+                        "surface-bright": "#282c36",
+                        "on-surface": "#ecedf6",
+                        "tertiary": "#ff7162",
+                        "surface-container": "#161a21",
+                        "secondary-container": "#3c475d",
+                        "on-primary-container": "#00482c",
+                        "surface-container-highest": "#22262f",
+                        "surface-container-high": "#1c2028",
+                        "primary": "#50ffb0",
+                        "background": "#0b0e14",
+                        "tertiary-fixed-dim": "#ff7c6c",
+                        "surface-container-lowest": "#000000",
+                        "on-error": "#490006",
+                        "surface-dim": "#0b0e14",
+                        "secondary-fixed": "#d7e2ff",
+                        "on-error-container": "#ffa8a3",
+                        "on-secondary-fixed-variant": "#515c73",
+                        "on-tertiary-fixed-variant": "#7a0004",
+                        "primary-fixed": "#50ffb0",
+                        "tertiary-dim": "#e2241f",
+                        "on-tertiary-fixed": "#3a0001",
+                        "on-tertiary": "#4a0001",
+                        "surface": "#0b0e14",
+                        "inverse-primary": "#006d45",
+                        "secondary-fixed-dim": "#c9d4f0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": [
+                            "Space Grotesk"
+                        ],
+                        "body": [
+                            "Inter"
+                        ],
+                        "label": [
+                            "Inter"
+                        ]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen flex flex-col selection:bg-primary/30 selection:text-primary">
+<!-- TopNavBar Component -->
+<header class="bg-[#0b0e14]/80 backdrop-blur-xl fixed top-0 w-full z-50 shadow-[0_4px_30px_rgba(80,255,176,0.08)]">
+<div class="flex items-center justify-between px-8 py-4 w-full gap-x-6">
+<div class="flex items-center gap-x-12">
+<div class="text-2xl font-bold tracking-tighter text-[#ecedf6] font-['Space_Grotesk']">ChainSight</div>
+<nav class="hidden md:flex items-center gap-x-8 font-['Space_Grotesk'] tracking-tight">
+<a class="text-[#50ffb0] border-b-2 border-[#50ffb0] pb-1 scale-95 active:opacity-80" href="#">Fleet</a>
+<a class="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 scale-95 active:opacity-80" href="#">Logistics</a>
+<a class="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 scale-95 active:opacity-80" href="#">Intelligence</a>
+<a class="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 scale-95 active:opacity-80" href="#">Contracts</a>
+</nav>
+</div>
+<div class="flex items-center gap-x-4">
+<button class="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 font-['Space_Grotesk'] tracking-tight px-4 py-2">Login</button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-medium px-6 py-2 rounded-xl transition-transform hover:scale-105 active:scale-95 font-['Space_Grotesk'] tracking-tight">Connect Wallet</button>
+</div>
+</div>
+</header>
+<main class="flex-grow pt-24 pb-20">
+<!-- Hero Section -->
+<section class="relative min-h-[870px] flex items-center justify-center px-8 overflow-hidden">
+<!-- Decorative Background Glow -->
+<div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-secondary-container/20 rounded-full blur-[150px]"></div>
+</div>
+<div class="max-w-7xl mx-auto w-full relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="space-y-8">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high border border-outline-variant/15 text-primary text-sm font-medium font-body shadow-[0_0_20px_rgba(80,255,176,0.1)]">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        Mainnet v2.4 Live
+                    </div>
+<h1 class="text-5xl lg:text-7xl font-headline font-bold leading-tight tracking-tighter">
+                        The Sovereign Ledger for <span class="text-transparent bg-clip-text bg-gradient-to-br from-primary to-primary-container">Global Logistics</span>
+</h1>
+<p class="text-lg text-on-surface-variant max-w-xl font-body leading-relaxed">
+                        Cryptographic proof-of-provenance meets enterprise AI. Secure your supply chain with verifiable nodes, zero-knowledge proofs, and real-time neural intelligence.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4 pt-4">
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-headline font-semibold px-8 py-4 rounded-xl transition-transform hover:scale-105 active:scale-95 text-lg flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(80,255,176,0.2)]">
+                            Deploy Infrastructure
+                            <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">arrow_forward</span>
+</button>
+<button class="px-8 py-4 rounded-xl border border-outline-variant/20 hover:border-primary/40 text-on-surface font-headline font-medium transition-all bg-surface-container-low hover:bg-surface-container flex items-center justify-center gap-2 relative overflow-hidden group">
+<span class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                            View Documentation
+                        </button>
+</div>
+<div class="grid grid-cols-3 gap-6 pt-12 border-t border-outline-variant/10">
+<div>
+<div class="text-3xl font-headline font-bold text-on-surface">$4.2B</div>
+<div class="text-sm text-on-surface-variant font-body mt-1">Total Value Tracked</div>
+</div>
+<div>
+<div class="text-3xl font-headline font-bold text-on-surface">18.4k</div>
+<div class="text-sm text-on-surface-variant font-body mt-1">Active Nodes</div>
+</div>
+<div>
+<div class="text-3xl font-headline font-bold text-primary">0.01s</div>
+<div class="text-sm text-on-surface-variant font-body mt-1">Proof Finality</div>
+</div>
+</div>
+</div>
+<!-- Hero Visual / Bento Base -->
+<div class="relative h-[600px] w-full perspective-1000">
+<div class="absolute inset-0 bg-surface-container-high/80 backdrop-blur-xl rounded-2xl border border-outline-variant/15 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.5)] transform rotate-y-[-5deg] rotate-x-[5deg] transition-transform duration-500 hover:rotate-y-0 hover:rotate-x-0 group">
+<!-- Glow effect on hover -->
+<div class="absolute inset-0 rounded-2xl shadow-[inset_0_0_0_1px_rgba(80,255,176,0)] group-hover:shadow-[inset_0_0_0_1px_rgba(80,255,176,0.3)] transition-all duration-500 pointer-events-none"></div>
+<div class="flex items-center justify-between mb-6 pb-4 border-b border-outline-variant/15">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">hub</span>
+<span class="font-headline font-semibold text-lg">Neural Provenance Graph</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-surface-variant font-mono">Syncing</span>
+<div class="flex gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/40"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/20"></div>
+</div>
+</div>
+</div>
+<!-- Mock Terminal/Graph Content -->
+<div class="space-y-4 font-mono text-sm">
+<div class="bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/10 flex justify-between items-center group/item hover:border-primary/30 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-base">check_circle</span>
+<span class="text-on-surface-variant text-xs">Block #894210</span>
+</div>
+<span class="text-primary text-xs opacity-80">Verified</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/10 flex justify-between items-center group/item hover:border-primary/30 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-base">check_circle</span>
+<span class="text-on-surface-variant text-xs">Block #894209</span>
+</div>
+<span class="text-primary text-xs opacity-80">Verified</span>
+</div>
+<div class="bg-surface-container-lowest p-3 rounded-xl border border-tertiary/30 relative overflow-hidden">
+<div class="absolute inset-0 bg-tertiary/5"></div>
+<div class="flex justify-between items-center relative z-10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary text-base">warning</span>
+<span class="text-on-surface-variant text-xs">Anomaly Detected: Node Alpha</span>
+</div>
+<span class="text-tertiary text-xs">Resolving...</span>
+</div>
+</div>
+<!-- Graphical representation -->
+<div class="h-40 mt-6 relative w-full flex items-end gap-2 pt-4 border-b border-l border-outline-variant/20 px-2 pb-2">
+<div class="w-1/6 bg-secondary-container h-[40%] rounded-t-sm hover:bg-primary/40 transition-colors"></div>
+<div class="w-1/6 bg-secondary-container h-[60%] rounded-t-sm hover:bg-primary/40 transition-colors"></div>
+<div class="w-1/6 bg-primary-container h-[85%] rounded-t-sm relative shadow-[0_0_15px_rgba(80,255,176,0.3)]">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-primary font-bold">Peak</div>
+</div>
+<div class="w-1/6 bg-secondary-container h-[50%] rounded-t-sm hover:bg-primary/40 transition-colors"></div>
+<div class="w-1/6 bg-secondary-container h-[70%] rounded-t-sm hover:bg-primary/40 transition-colors"></div>
+<div class="w-1/6 bg-primary/20 h-[30%] rounded-t-sm border-t border-primary border-dashed animate-pulse"></div>
+</div>
+</div>
+</div>
+<!-- Decorative floating element -->
+<div class="absolute -bottom-8 -right-8 bg-surface-container-high/90 backdrop-blur-md border border-outline-variant/20 p-4 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.6)] flex items-center gap-4 transform translate-z-10 animate-[bounce_4s_infinite_ease-in-out]">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/30">
+<span class="material-symbols-outlined text-primary text-xl">security</span>
+</div>
+<div>
+<div class="text-xs text-on-surface-variant font-mono">Consensus</div>
+<div class="text-sm font-bold text-on-surface">100% Secured</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Feature Bento Grid Section -->
+<section class="bg-surface-container-low py-24 relative">
+<div class="max-w-7xl mx-auto px-8">
+<div class="mb-16">
+<h2 class="text-3xl md:text-4xl font-headline font-bold mb-4">Architectural Integrity</h2>
+<p class="text-on-surface-variant max-w-2xl text-lg">Beyond mere tracking. A cryptographic foundation designed for zero-trust environments where data provenance is mission-critical.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[280px]">
+<!-- Feature 1: Large Glass Card -->
+<div class="md:col-span-2 bg-surface-container-high/60 backdrop-blur-lg rounded-2xl p-8 border border-outline-variant/10 relative overflow-hidden group hover:border-primary/20 transition-colors duration-300">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] group-hover:bg-primary/10 transition-colors duration-500"></div>
+<div class="relative z-10 h-full flex flex-col justify-between">
+<span class="material-symbols-outlined text-primary text-4xl mb-4" style="font-variation-settings: 'FILL' 1;">enhanced_encryption</span>
+<div>
+<h3 class="text-2xl font-headline font-bold mb-2">Zero-Knowledge Proofs</h3>
+<p class="text-on-surface-variant">Verify logistical milestones without exposing sensitive route or cargo data. Mathematical certainty meets enterprise privacy.</p>
+</div>
+</div>
+</div>
+<!-- Feature 2: Small Vertical Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 relative overflow-hidden group hover:border-outline-variant/30 transition-colors">
+<div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="h-full flex flex-col items-center text-center justify-center space-y-4">
+<div class="w-16 h-16 rounded-full bg-secondary-container/30 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-on-secondary-container text-3xl">route</span>
+</div>
+<h3 class="text-lg font-headline font-semibold">Immutable Routing</h3>
+<p class="text-sm text-on-surface-variant">Historical pathing recorded permanently on-chain.</p>
+</div>
+</div>
+<!-- Feature 3: Small Horizontal Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 flex items-center gap-6 group hover:border-outline-variant/30 transition-colors">
+<div class="w-14 h-14 rounded-full bg-tertiary-container/10 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-tertiary text-2xl">memory</span>
+</div>
+<div>
+<h3 class="text-lg font-headline font-semibold mb-1">Explainable AI</h3>
+<p class="text-sm text-on-surface-variant">Predictive models with auditable decision trees.</p>
+</div>
+</div>
+<!-- Feature 4: Medium Interactive Card -->
+<div class="md:col-span-2 bg-surface-container-high/80 rounded-2xl p-8 border border-outline-variant/10 group shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_30px_rgba(80,255,176,0.05)] transition-shadow duration-500">
+<div class="flex flex-col md:flex-row h-full gap-8 items-center">
+<div class="flex-1">
+<h3 class="text-2xl font-headline font-bold mb-3 flex items-center gap-2">
+                                    Smart Contract Audits
+                                    <span class="px-2 py-0.5 rounded text-[10px] uppercase font-mono tracking-wider bg-primary/10 text-primary border border-primary/20">Automated</span>
+</h3>
+<p class="text-on-surface-variant mb-6">Continuous static analysis and formal verification of logistical smart contracts deployed to the network.</p>
+<button class="text-primary text-sm font-medium hover:text-primary-container transition-colors flex items-center gap-1">
+                                    View Audit Logs <span class="material-symbols-outlined text-sm">arrow_right_alt</span>
+</button>
+</div>
+<!-- Mini visualization inside card -->
+<div class="w-full md:w-1/2 bg-surface p-4 rounded-xl border border-outline-variant/15 font-mono text-xs text-on-surface-variant space-y-2 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-100 transition-opacity duration-700">
+<span class="material-symbols-outlined text-primary">policy</span>
+</div>
+<div class="flex justify-between"><span class="text-secondary-dim">Contract:</span> <span>0x7f4...9a2</span></div>
+<div class="flex justify-between"><span class="text-secondary-dim">Status:</span> <span class="text-primary">Secured</span></div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mt-3">
+<div class="bg-gradient-to-r from-primary to-primary-container h-full w-[100%] rounded-full shadow-[0_0_10px_rgba(80,255,176,0.5)]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Component -->
+<footer class="bg-[#0b0e14] w-full py-12 px-8 border-t border-[#45484f]/15">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-y-6">
+<div class="text-lg font-black text-[#ecedf6] font-['Space_Grotesk'] tracking-tighter">ChainSight</div>
+<nav class="flex flex-wrap justify-center gap-x-8 gap-y-4">
+<a class="text-[#ecedf6]/40 hover:text-[#50ffb0] transition-opacity font-['Inter'] text-xs uppercase tracking-widest" href="#">Privacy Protocol</a>
+<a class="text-[#ecedf6]/40 hover:text-[#50ffb0] transition-opacity font-['Inter'] text-xs uppercase tracking-widest" href="#">Terms of Service</a>
+<a class="text-[#ecedf6]/40 hover:text-[#50ffb0] transition-opacity font-['Inter'] text-xs uppercase tracking-widest" href="#">API Documentation</a>
+<a class="text-[#ecedf6]/40 hover:text-[#50ffb0] transition-opacity font-['Inter'] text-xs uppercase tracking-widest" href="#">Network Status</a>
+</nav>
+<div class="text-[#ecedf6]/40 font-['Inter'] text-xs uppercase tracking-widest text-center md:text-right">
+                © 2024 ChainSight Intelligence. Secured by Sovereign Ledger.
+            </div>
+</div>
+</footer>
+</body></html>
