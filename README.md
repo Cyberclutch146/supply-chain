@@ -32,7 +32,7 @@ A modern, highly aesthetic supply chain tracking and risk prediction tool powere
 ## Project Structure
 - `src/components/`: Reusable interface components and global layout wrappers.
 - `src/context/`: Core React contexts managing state and real-time syncing mechanism.
-- `src/pages/`: Main application routes (`Dashboard`, `ShipmentDetail`, `AddShipment`, `AddCheckpoint`).
+- `src/pages/`: Main application routes (`Dashboard`, `Tracking`, `Contracts`, `NodeStatus`, `AuditLogs`, `Settings`, `Landing`).
 - `src/services/`: Firebase configurations and initializers.
 
 ## Note
