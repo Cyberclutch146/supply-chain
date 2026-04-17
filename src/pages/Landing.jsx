@@ -14,7 +14,15 @@ const Landing = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      await signInAnonymously(auth);
+      const { user } = await signInAnonymously(auth);
+      
+      // Set a generic identity for session login
+      await setDoc(doc(db, 'users', user.uid), {
+        walletAddress: '0xDEVICE0000000000000000000000000000NODE',
+        nodeId: 'Node-DEV',
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
       navigate('/');
     } catch (error) {
       console.error('Login failed', error);
@@ -62,10 +70,10 @@ const Landing = () => {
           <div className="flex items-center gap-x-12">
             <div className="text-2xl font-bold tracking-tighter text-[#ecedf6] font-['Space_Grotesk']">ChainSight</div>
             <nav className="hidden md:flex items-center gap-x-8 font-['Space_Grotesk'] tracking-tight">
-              <span className="text-[#50ffb0] border-b-2 border-[#50ffb0] pb-1 cursor-pointer">Fleet</span>
-              <span className="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 cursor-pointer">Logistics</span>
-              <span className="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 cursor-pointer">Intelligence</span>
-              <span className="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 cursor-pointer">Contracts</span>
+              <span onClick={() => setShowLoginModal(true)} className="text-[#50ffb0] border-b-2 border-[#50ffb0] pb-1 cursor-pointer">Fleet</span>
+              <span onClick={() => setShowLoginModal(true)} className="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 cursor-pointer">Logistics</span>
+              <span onClick={() => setShowLoginModal(true)} className="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 cursor-pointer">Intelligence</span>
+              <span onClick={() => setShowLoginModal(true)} className="text-[#ecedf6]/60 hover:text-[#50ffb0] transition-colors duration-300 cursor-pointer">Contracts</span>
             </nav>
           </div>
           <div className="flex items-center gap-x-4">

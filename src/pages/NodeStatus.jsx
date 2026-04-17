@@ -1,5 +1,6 @@
 import React from 'react';
 import { useShipments } from '../context/ShipmentContext';
+import { ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const NodeStatus = () => {
   const { shipments } = useShipments();
@@ -45,6 +46,31 @@ const NodeStatus = () => {
         </div>
       </div>
 
+      <div className="glass-card rounded-xl p-6 mb-8 h-64">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider">Node Telemetry Tracking</h3>
+          <div className="flex gap-4">
+             <span className="flex items-center gap-1 text-xs text-on-surface-variant"><div className="w-2 h-2 rounded-full bg-primary"></div> CPU Load (%)</span>
+             <span className="flex items-center gap-1 text-xs text-on-surface-variant"><div className="w-2 h-2 rounded-full bg-[#1c2028] border border-[rgba(255,255,255,0.2)]"></div> Latency (ms)</span>
+          </div>
+        </div>
+        <ResponsiveContainer width="100%" height={200}>
+          <ComposedChart data={baseNodes} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+            <XAxis dataKey="id" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} />
+            <YAxis yAxisId="left" stroke="rgba(255,255,255,0.3)" fontSize={11} tickLine={false} axisLine={false} />
+            <YAxis yAxisId="right" orientation="right" stroke="rgba(255,255,255,0.0)" fontSize={11} tickLine={false} axisLine={false} />
+            <Tooltip 
+              cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+              contentStyle={{ backgroundColor: 'rgba(16,18,23,0.9)', border: '1px solid rgba(80,255,176,0.2)', borderRadius: '8px' }}
+              itemStyle={{ color: '#fff', fontSize: '12px' }}
+            />
+            <Bar yAxisId="left" dataKey="load" name="CPU Load" fill="#50ffb0" radius={[4, 4, 0, 0]} barSize={30} isAnimationActive={true} />
+            <Line yAxisId="right" type="monotone" dataKey="latency" name="Latency" stroke="rgba(255,255,255,0.7)" strokeWidth={2} strokeDasharray="4 4" dot={{r: 4, fill: '#1c2028', stroke: 'rgba(255,255,255,0.7)', strokeWidth: 2}} isAnimationActive={true} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
       <div className="glass-card rounded-2xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -66,7 +92,7 @@ const NodeStatus = () => {
                     </div>
                     <div>
                       <div className="font-medium text-on-surface text-sm">Validating Node</div>
-                      <div className="text-[10px] text-on-surface-variant font-mono mt-0.5">0x{(Math.random()*100000).toString(16).substring(0,8)}...</div>
+                      <div className="text-[10px] text-on-surface-variant font-mono mt-0.5">0x{Array.from(n.id).reduce((s, c) => Math.imul(31, s) + c.charCodeAt(0) | 0, 0).toString(16).substring(0,8).replace('-','')}...</div>
                     </div>
                   </div>
                 </td>

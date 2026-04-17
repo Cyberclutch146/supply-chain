@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useShipments } from '../context/ShipmentContext';
 import { toast } from 'react-hot-toast';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const Tracking = () => {
   const { shipments, addCheckpoint } = useShipments();
@@ -16,6 +17,42 @@ const Tracking = () => {
   const activeShipment = shipments.find(s => s.id === selectedShipment) || null;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Compute Risk Timeline Data for the chart
+  const riskTimelineData = useMemo(() => {
+    if (!activeShipment || !activeShipment.checkpoints) return [];
+    
+    // Checkpoints are stored newest first. Reverse to show earliest on the left of chart.
+    const reversed = [...activeShipment.checkpoints].reverse();
+    
+    const mapped = reversed.map((cp, idx) => {
+      const time = new Date(cp.timestamp);
+      return {
+        index: idx + 1,
+        time: `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`,
+        riskScore: cp.aiAnalysis?.riskScore || 0,
+        location: cp.location
+      };
+    });
+    
+    if (mapped.length < 10) {
+      const padCount = 10 - mapped.length;
+      const anchorTime = reversed.length > 0 ? new Date(reversed[0].timestamp).getTime() : Date.now();
+      const padded = [];
+      for (let i = padCount; i > 0; i--) {
+        const d = new Date(anchorTime - i * 60000); // 1 minute intervals
+        padded.push({
+          index: -i,
+          time: `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`,
+          riskScore: 0,
+          location: 'Historical'
+        });
+      }
+      return [...padded, ...mapped];
+    }
+    
+    return mapped;
+  }, [activeShipment]);
 
   const handleAddCheckpoint = async (e) => {
     e.preventDefault();
@@ -106,6 +143,35 @@ const Tracking = () => {
 
             <div className="flex-1 overflow-y-auto p-6 relative">
               
+              {/* Risk Timeline Chart */}
+              {riskTimelineData.length > 0 && (
+                <div className="mb-8 w-full h-48 glass-card p-4 rounded-xl relative">
+                  <div className="text-xs text-on-surface-variant mb-2 font-medium">Risk Score Timeline</div>
+                  <ResponsiveContainer width="100%" height={150}>
+                    <LineChart data={riskTimelineData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                      <XAxis dataKey="time" stroke="rgba(255,255,255,0.3)" fontSize={10} tickLine={false} axisLine={false} />
+                      <YAxis stroke="rgba(255,255,255,0.3)" fontSize={10} tickLine={false} axisLine={false} domain={[0, 100]} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: 'rgba(16,18,23,0.9)', border: '1px solid rgba(80,255,176,0.2)', borderRadius: '8px' }}
+                        itemStyle={{ color: '#fff', fontSize: '12px' }}
+                        labelStyle={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="riskScore" 
+                        name="AI Risk"
+                        stroke="#ff7162" 
+                        strokeWidth={2} 
+                        dot={{ r: 4, fill: '#1c2028', stroke: '#ff7162', strokeWidth: 2 }} 
+                        activeDot={{ r: 6, fill: '#ff7162' }}
+                        isAnimationActive={true}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+
               {isAdding && (
                 <div className="mb-8 glass-form p-6 rounded-xl animate-in slide-in-from-top-4 duration-300">
                   <h3 className="font-headline font-semibold text-lg mb-4 text-on-surface flex items-center gap-2">
